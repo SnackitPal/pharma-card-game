@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THERAPEUTIC INDEX — The Pharmacology Card Game</title>
+<meta name="description" content="Play god with 132 real medicines. Screen molecules, run clinical trials, survive patent cliffs, and duel AI rivals across authentic clinical cases.">
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="THERAPEUTIC INDEX — The Pharmacology Card Game">
+<meta property="og:description" content="Play god with 132 real medicines. Screen molecules, run clinical trials, survive patent cliffs, and duel AI rivals across authentic clinical cases.">
+<meta property="og:image" content="https://therapeuticindex.io/og-preview.png">
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="THERAPEUTIC INDEX — The Pharmacology Card Game">
+<meta name="twitter:description" content="Play god with 132 real medicines. Screen molecules, run clinical trials, survive patent cliffs, and duel AI rivals across authentic clinical cases.">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23ffd166" d="M12 1l9.5 5.5v11L12 23l-9.5-5.5v-11z"/><path fill="%23070b14" d="M12 4l7 4v8l-7 4-7-4V8z"/><path fill="%23ffd166" d="M9.2 9.6h5.6a2.4 2.4 0 0 1 0 4.8H9.2a2.4 2.4 0 0 1 0-4.8z"/></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;800&family=Lora:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/card.css">
+<link rel="stylesheet" href="css/modes.css">
+</head>
+<body>
+
+<!-- ============ SVG ICON SPRITE ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-hex" viewBox="0 0 24 24"><path d="M12 2l8.7 5v10L12 22l-8.7-5V7z"/></symbol>
+<symbol id="i-pill" viewBox="0 0 24 24"><rect x="2.6" y="8.4" width="18.8" height="7.2" rx="3.6" transform="rotate(-45 12 12)"/><path d="M8.5 8.5l7 7"/></symbol>
+<symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5.3 9.2A1.8 1.8 0 0 0 6.3 21h11.4a1.8 1.8 0 0 0 1.6-2.8L14 9V3"/><path d="M7.5 15h9"/></symbol>
+<symbol id="i-dna" viewBox="0 0 24 24"><path d="M7 3c0 5 10 5 10 10S7 18 7 23M17 3c0 5-10 5-10 10s10 5 10 10"/><path d="M8.5 7h7M7.5 12h9M8.5 17h7"/></symbol>
+<symbol id="i-atom" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.6"/><ellipse cx="12" cy="12" rx="9" ry="3.4"/><ellipse cx="12" cy="12" rx="9" ry="3.4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.4" transform="rotate(120 12 12)"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20.5S3.6 15.4 2.3 10.9C1.3 7.4 3.6 4.5 6.7 4.5c2.1 0 3.8 1.1 5.3 3.2 1.5-2.1 3.2-3.2 5.3-3.2 3.1 0 5.4 2.9 4.4 6.4C20.4 15.4 12 20.5 12 20.5z"/></symbol>
+<symbol id="i-brain" viewBox="0 0 24 24"><path d="M9.5 4a3 3 0 0 0-3 3 3.4 3.4 0 0 0-1.6 5.8A3.4 3.4 0 0 0 8 19h1.5V4zM14.5 4a3 3 0 0 1 3 3 3.4 3.4 0 0 1 1.6 5.8A3.4 3.4 0 0 1 16 19h-1.5V4z"/><path d="M12 4v15"/></symbol>
+<symbol id="i-bug" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 7V4M12 20v-3M7 12H4M20 12h-3M8.2 8.2 6 6M15.8 8.2 18 6M8.2 15.8 6 18M15.8 15.8 18 18"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 3v6c0 4.6-3.2 7.6-7.5 9-4.3-1.4-7.5-4.4-7.5-9V6z"/><path d="M9 11.5l2.2 2.2L15.5 9"/></symbol>
+<symbol id="i-lung" viewBox="0 0 24 24"><path d="M11 4v8M11 12c0 5-1.2 8-3.6 8C5 20 3.5 16.5 3.5 13c0-2.4 1.4-3.6 3-3.6 1.6 0 2.5.8 2.5 2.6M13 12c0 5 1.2 8 3.6 8 2.4 0 3.9-3.5 3.9-7 0-2.4-1.4-3.6-3-3.6-1.6 0-2.5.8-2.5 2.6"/></symbol>
+<symbol id="i-gut" viewBox="0 0 24 24"><path d="M8 3.5c6.5 0 9.5 2 9.5 5.2 0 2.8-4 3.3-4 6.3 0 2.6 3 2.8 3 5.5H9.5c-3.2 0-5.5-2-5.5-5 0-2.6 2.2-3.2 2.2-6.2"/></symbol>
+<symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s6.5 7 6.5 11.5a6.5 6.5 0 0 1-13 0C5.5 10 12 3 12 3z"/></symbol>
+<symbol id="i-syringe" viewBox="0 0 24 24"><path d="M19 2l3 3M17.5 5.5 20 8l-2.5 2.5L15 8zM15 8l-8.5 8.5M11 6l4 4M6.5 13.5l4 4M4 20l2.5-2.5M3 21l1-1"/></symbol>
+<symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h8a2.5 2.5 0 1 1-2.5 2.5"/></symbol>
+<symbol id="i-patch" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9c2.5-2 5.5-2 8 0M8 13c2.5-2 5.5-2 8 0"/></symbol>
+<symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M14.8 9.6c0-1.1-1.2-1.8-2.8-1.8s-2.8.7-2.8 1.8 1.1 1.6 2.8 2c1.7.4 2.8.9 2.8 2s-1.2 1.8-2.8 1.8-2.8-.7-2.8-1.8"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 17l6-6 4 3.5L21 6"/><path d="M16 6h5v5"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></symbol>
+<symbol id="i-gavel" viewBox="0 0 24 24"><path d="M13.5 4.5l6 6M11 7l6 6M8.5 9.5l6 6-2.2 2.2-6-6zM4 20.5h10"/></symbol>
+<symbol id="i-factory" viewBox="0 0 24 24"><path d="M3 21V10.5l5.5 3.5v-3.5L14 17v-6.5l5.5 3.5V21zM3 21h18"/><path d="M7 17.5h2M12 17.5h2M17 17.5h2"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20v3H6.5"/></symbol>
+<symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 5H4a3 3 0 0 0 3 4M17 5h3a3 3 0 0 1-3 4M12 14v4M8 21h8M9.5 18h5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-al" viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5"/></symbol>
+<symbol id="i-ar" viewBox="0 0 24 24"><path d="M9.5 5.5 16 12l-6.5 6.5"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5 22 20H2z"/><path d="M12 10v4.5M12 17.2v.3"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5 5L19.5 7"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 7.8v.4"/></symbol>
+<symbol id="i-dice" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3.5"/><circle cx="9" cy="9" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1.1" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 3v4h-4"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol>
+<symbol id="i-stack" viewBox="0 0 24 24"><rect x="7" y="3.5" width="13" height="13" rx="2"/><path d="M4 7.5v9A3.5 3.5 0 0 0 7.5 20h9"/></symbol>
+<symbol id="i-flip" viewBox="0 0 24 24"><path d="M4 9a8 8 0 0 1 14-2.5M20 15a8 8 0 0 1-14 2.5"/><path d="M18 3v4h-4M6 21v-4h4"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.7l5.9-.8z"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12z"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M9.5 14.5 14.5 9.5M8 11l-2.5 2.5a4 4 0 0 0 5.7 5.7L13.5 17M16 13l2.5-2.5a4 4 0 0 0-5.7-5.7L10.5 7"/></symbol>
+<symbol id="i-fire" viewBox="0 0 24 24"><path d="M12 3s1 3-1.5 6S7 12.5 7 16a5 5 0 0 0 10 0c0-2-1-3.5-2-4.5 0 1.5-.7 2.5-1.5 2.5.5-3-1.5-8-1.5-11z"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.5-3.5 4.2-5 7.5-5s6 1.5 7.5 5"/></symbol>
+<symbol id="i-vol" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5zM15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></symbol>
+<symbol id="i-volx" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5zM16 9.5l5 5M21 9.5l-5 5"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15L20 12z"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.5 9.5A2.5 2.5 0 1 1 12 12.5v1.5M12 17.2v.3"/></symbol>
+<symbol id="i-flag" viewBox="0 0 24 24"><path d="M5.5 21V4M5.5 4h12l-2.5 4 2.5 4h-12"/></symbol>
+<symbol id="i-skull" viewBox="0 0 24 24"><path d="M12 3a7.5 7.5 0 0 0-7.5 7.5c0 3 1.6 5 3.5 6v3h8v-3c1.9-1 3.5-3 3.5-6A7.5 7.5 0 0 0 12 3z"/><circle cx="9" cy="11" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="11" r="1.4" fill="currentColor" stroke="none"/><path d="M12 14.5l-1 2h2z" fill="currentColor" stroke="none"/></symbol>
+</defs>
+</svg>
+
+<canvas id="bg" aria-hidden="true"></canvas>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<!-- ============ HEADER ============ -->
+<header id="topnav">
+  <a class="logo" href="#/home" data-route="home">
+    <svg class="logo-mark"><use href="#i-hex"/></svg>
+    <span class="logo-txt">THERAPEUTIC<b>INDEX</b></span>
+  </a>
+  <nav id="mainnav">
+    <a href="#/home" data-route="home">Home</a>
+    <a href="#/campaign" data-route="campaign">Campaign</a>
+    <a href="#/library" data-route="library">Compendium</a>
+    <a href="#/arena" data-route="arena">Arena</a>
+    <a href="#" data-route="daily" class="nav-daily" title="Daily Clinical Case Challenge">Daily Case</a>
+    <a href="#" data-route="tutorial" class="nav-tut" title="Case Zero: Interactive Guided Tutorial">Case Zero</a>
+    <a href="#" data-route="casemaker" class="nav-maker" title="Custom Clinical Case Architect">Case Maker</a>
+  </nav>
+  <div class="nav-tools">
+    <button class="icon-btn" id="btn-trophies" aria-label="Achievements & Trophies" title="Trophies & Medals"><svg><use href="#i-trophy"/></svg></button>
+    <button class="icon-btn" id="btn-help" aria-label="How to play" title="How to play"><svg><use href="#i-help"/></svg></button>
+    <button class="icon-btn" id="btn-sound" aria-label="Toggle sound" title="Sound"><svg><use href="#i-vol"/></svg></button>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- ============ HOME ============ -->
+  <section class="view" id="view-home">
+    <div class="hero">
+      <div id="hero-cards" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <div class="hero-kicker mono">132 REAL MEDICINES · REAL PHARMACOLOGY · NO PAYWALL</div>
+        <h1 class="hero-title">PLAY GOD WITH<br>132 REAL MEDICINES.<br><span class="grad">EVERY STAT IS GROUNDED IN SCIENCE.</span></h1>
+        <p class="hero-sub">Screen lead molecules, push candidate drugs through brutal clinical trials that can fail, ride patent cliffs, and duel AI rivals across real patient charts. Synergies reward genius polypharmacy; toxic drug interactions punish careless prescribing.</p>
+        <div class="hero-ctas">
+          <button class="btn btn-mint btn-lg" data-route="tutorial"><svg><use href="#i-check"/></svg>Case Zero Tutorial</button>
+          <button class="btn btn-primary btn-lg" data-route="campaign"><svg><use href="#i-flask"/></svg>Found your pharma</button>
+          <button class="btn btn-gold btn-lg" data-route="daily"><svg><use href="#i-spark"/></svg>Play Daily Case</button>
+          <button class="btn btn-lg" data-route="casemaker"><svg><use href="#i-atom"/></svg>Case Maker</button>
+          <button class="btn btn-lg" data-route="library"><svg><use href="#i-stack"/></svg>Browse Compendium</button>
+          <button class="btn btn-lg" data-route="arena"><svg><use href="#i-trophy"/></svg>The Formulary Cup</button>
+        </div>
+        <div class="hero-stats mono" id="hero-stats"></div>
+      </div>
+    </div>
+    <div class="home-modes">
+      <button class="mode-card" data-route="campaign">
+        <div class="mode-ico" style="--c:#ffd166"><svg><use href="#i-flask"/></svg></div>
+        <h3>Campaign <span class="mono tag-mini">FIRST IN HUMAN</span></h3>
+        <p>Draft 1 of 3 starter leads with $60M cash and 4 AP/yr. Screen molecules, push trials (failed trials teach +8 Data), hire a CSO, navigate patent cliffs, and reach a $2.5B+ valuation.</p>
+        <span class="mode-go mono">FOUND COMPANY →</span>
+      </button>
+      <button class="mode-card" data-route="daily">
+        <div class="mode-ico" style="--c:#2fd6a5"><svg><use href="#i-spark"/></svg></div>
+        <h3>Daily Clinical Case <span class="mono tag-mini">DAILY CHALLENGE</span></h3>
+        <p>One patient, one clinical diagnosis, one attempt per day. Prescribe a 3-drug regimen against unique patient modifiers, build daily streaks, and share your score.</p>
+        <span class="mode-go mono">START DAILY CASE →</span>
+      </button>
+      <button class="mode-card" data-route="arena">
+        <div class="mode-ico" style="--c:#ff5470"><svg><use href="#i-trophy"/></svg></div>
+        <h3>Arena <span class="mono tag-mini">THE FORMULARY CUP</span></h3>
+        <p>Climb the difficulty ladder from Intern to Attending. Consult seniors for mulligans, exploit guideline synergies, and unlock Holo Foil card masteries.</p>
+        <span class="mode-go mono">TAKE THE CUP →</span>
+      </button>
+      <button class="mode-card" data-route="library">
+        <div class="mode-ico" style="--c:#4cc9f0"><svg><use href="#i-stack"/></svg></div>
+        <h3>The Compendium <span class="mono tag-mini">132 REAL DRUGS</span></h3>
+        <p>A holographic library of 132 real medicines — from digoxin to CAR-T. Track collection progress, view pharmacology dossiers, and inspect foil masteries.</p>
+        <span class="mode-go mono">OPEN VAULT →</span>
+      </button>
+    </div>
+    <div class="ticker-wrap"><div class="ticker" id="home-ticker"></div></div>
+    <footer class="site-foot">
+      <span>Educational entertainment. Sales figures & pharmacology are approximations — not medical advice.</span>
+      <span class="mono">THERAPEUTIC INDEX · built for molecule nerds</span>
+    </footer>
+  </section>
+
+  <!-- ============ CAMPAIGN ============ -->
+  <section class="view" id="view-campaign">
+    <div id="c-root"></div>
+  </section>
+
+  <!-- ============ LIBRARY ============ -->
+  <section class="view" id="view-library">
+    <div class="lib-head">
+      <div>
+        <h2 class="view-title">THE COMPENDIUM</h2>
+        <p class="view-sub">Every card is a real medicine. Stats are derived from real pharmacology — half-life, bioavailability, market gravity, manufacturing complexity.</p>
+      </div>
+      <div class="lib-count mono" id="lib-count"></div>
+    </div>
+    <div class="lib-tools" id="lib-tools"></div>
+    <div class="lib-grid" id="lib-grid"></div>
+    <div class="lib-empty" id="lib-empty" hidden>
+      <svg><use href="#i-search"/></svg>
+      <p>No compounds match. Even the FDA finds nothing sometimes.</p>
+    </div>
+  </section>
+
+  <!-- ============ ARENA ============ -->
+  <section class="view" id="view-arena">
+    <div id="d-root"></div>
+  </section>
+
+</main>
+
+<div id="modal-root"></div>
+<div id="toast-root" aria-live="polite"></div>
+
+<script src="js/utils.js"></script>
+<script src="js/data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/ecg.js"></script>
+<script src="js/bg.js"></script>
+<script src="js/card.js"></script>
+<script src="js/library.js"></script>
+<script src="js/campaign.js"></script>
+<script src="js/duel.js"></script>
+<script src="js/tutorial.js"></script>
+<script src="js/casemaker.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+/* ============================================================
+   THERAPEUTIC INDEX — card.css
+   The 3D card engine: frames, holo foil, glare, tilt, flip
+   ============================================================ */
+
+/* Card sizes: --cw custom property controls width; aspect 63/88 */
+.card{
+  width:var(--cw,240px);
+  aspect-ratio:63/88;
+  perspective:1000px;
+  position:relative;
+  border-radius:calc(var(--cw,240px)*.055);
+  -webkit-tap-highlight-color:transparent;
+}
+.cin{
+  position:absolute;inset:0;
+  border-radius:inherit;
+  transform-style:preserve-3d;
+  transition:transform .5s cubic-bezier(.2,.9,.3,1.2);
+}
+.card.tilting .cin{transition:transform .08s ease-out}
+.card.flipped .cin{transform:rotateY(180deg)!important}
+
+.face{
+  position:absolute;inset:0;border-radius:calc(var(--cw,240px)*.055);
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  overflow:hidden;
+  background:
+    linear-gradient(160deg,color-mix(in srgb,var(--ac) 55%,#1a2440) 0%,color-mix(in srgb,var(--ac) 18%,#0b1120) 38%,#0a101f 100%);
+  border:1px solid color-mix(in srgb,var(--ac) 45%,transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    inset 0 0 34px color-mix(in srgb,var(--ac) 12%,transparent),
+    0 16px 40px -14px rgba(0,0,0,.75);
+}
+.face.back{transform:rotateY(180deg)}
+
+/* inner dark plate */
+.face::before{
+  content:"";position:absolute;inset:4px;border-radius:inherit;
+  background:linear-gradient(165deg,#101a30 0%,#0b1222 55%,#0d1526 100%);
+  border-radius:calc(var(--cw,240px)*.04);
+}
+/* corner brackets */
+.face::after{
+  content:"";position:absolute;inset:7px;border-radius:8px;pointer-events:none;
+  background:
+    linear-gradient(var(--ac),var(--ac)) top left/14px 1.5px,
+    linear-gradient(var(--ac),var(--ac)) top left/1.5px 14px,
+    linear-gradient(var(--ac),var(--ac)) bottom right/14px 1.5px,
+    linear-gradient(var(--ac),var(--ac)) bottom right/1.5px 14px;
+  background-repeat:no-repeat;opacity:.65;
+}
+
+/* holo foil overlay — intensity by rarity */
+.holo{
+  position:absolute;inset:0;z-index:6;pointer-events:none;border-radius:inherit;
+  background:
+    repeating-linear-gradient(115deg,
+      transparent 0 9px,
+      rgba(255,120,180,.10) 10px 13px,
+      transparent 14px 26px,
+      rgba(120,220,255,.10) 27px 30px,
+      transparent 31px 44px,
+      rgba(255,230,140,.09) 45px 47px),
+    radial-gradient(120% 90% at var(--gx,50%) var(--gy,50%),
+      rgba(255,255,255,.22),transparent 42%);
+  mix-blend-mode:color-dodge;
+  opacity:0;transition:opacity .25s;
+}
+.card[data-r="RARE"] .holo{opacity:.28}
+.card[data-r="EPIC"] .holo{opacity:.45}
+.card[data-r="LEGEND"] .holo{opacity:.62}
+.card[data-r="BANNED"] .holo{opacity:0}
+.card:hover .holo,.card.spotlight .holo{opacity:max(.35,.62)}
+.card[data-r="LEGEND"] .holo{animation:hueShift 6s linear infinite}
+@keyframes hueShift{to{filter:hue-rotate(360deg)}}
+.card[data-r="BANNED"] .face{filter:saturate(.25) brightness(.85)}
+
+/* pointer glare */
+.glare{
+  position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:inherit;
+  background:radial-gradient(circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.28),transparent 46%);
+  opacity:0;transition:opacity .25s;mix-blend-mode:screen;
+}
+.card:hover .glare{opacity:1}
+
+/* ---------- front layout ---------- */
+.cf{position:absolute;inset:0;padding:calc(var(--cw,240px)*.05);display:flex;flex-direction:column;gap:calc(var(--cw,240px)*.028)}
+.cf-top{display:flex;align-items:center;gap:6px;font-family:var(--font-m);font-size:calc(var(--cw,240px)*.036);color:var(--mut)}
+.cf-top .rar-gem{margin-left:auto;display:flex;align-items:center;gap:5px;color:var(--rc,#8fa3bf);letter-spacing:.08em;font-weight:800;font-size:calc(var(--cw,240px)*.034)}
+.rar-gem i{width:calc(var(--cw,240px)*.033);height:calc(var(--cw,240px)*.033);border-radius:50%;background:var(--rc,#8fa3bf);box-shadow:0 0 8px var(--rc,#8fa3bf)}
+.card[data-r="COMMON"]{--rc:#8fa3bf}.card[data-r="RARE"]{--rc:#4cc9f0}
+.card[data-r="EPIC"]{--rc:#c084fc}.card[data-r="LEGEND"]{--rc:#ffd166}
+.card[data-r="BANNED"]{--rc:#ff5470}
+
+.cf-name{
+  font-weight:700;line-height:1.06;letter-spacing:-.01em;
+  font-size:clamp(11px,calc(var(--cw,240px)*.082),30px);
+  text-shadow:0 2px 12px rgba(0,0,0,.6);
+}
+.cf-brand{font-size:calc(var(--cw,240px)*.037);color:var(--dim);font-style:italic;margin-top:1px}
+
+.cf-art{
+  position:relative;border-radius:calc(var(--cw,240px)*.035);overflow:hidden;
+  aspect-ratio:56/36;flex:none;
+  border:1px solid color-mix(in srgb,var(--ac) 35%,transparent);
+  box-shadow:inset 0 0 24px rgba(0,0,0,.5);
+  transform:translateZ(18px);
+}
+.cf-art canvas{width:100%;height:100%;object-fit:cover}
+
+.cf-moa{
+  font-size:calc(var(--cw,240px)*.036);line-height:1.3;color:color-mix(in srgb,var(--ac) 80%,#fff);
+  min-height:calc(var(--cw,240px)*.09);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.cf-moa b{text-transform:uppercase;letter-spacing:.1em;font-size:.82em;color:var(--ac)}
+
+.cf-stats{display:flex;flex-direction:column;gap:calc(var(--cw,240px)*.02);margin-top:auto}
+.rail{display:flex;align-items:center;gap:7px;font-family:var(--font-m);font-size:calc(var(--cw,240px)*.036)}
+.rail .rl{width:26px;color:var(--dim);font-size:.85em;letter-spacing:.08em}
+.rail .rt{flex:1;height:calc(var(--cw,240px)*.026);background:#0a1222;border-radius:99px;overflow:hidden;border:1px solid var(--line-soft)}
+.rail .rt i{display:block;height:100%;border-radius:99px;width:0;transition:width .9s cubic-bezier(.2,.8,.25,1)}
+.rail.eff .rt i{background:linear-gradient(90deg,#e88f4c,#ffd166)}
+.rail.saf .rt i{background:linear-gradient(90deg,#2f9dd6,#7ee0ff)}
+.rail .rv{width:20px;text-align:right;font-weight:800}
+
+.cf-chips{display:flex;gap:5px;flex-wrap:wrap}
+.cf-chip{
+  display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:99px;
+  font-family:var(--font-m);font-size:calc(var(--cw,240px)*.032);
+  background:rgba(255,255,255,.05);border:1px solid var(--line-soft);color:var(--mut);
+}
+.cf-chip svg{width:.95em;height:.95em}
+.cf-foot{
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--font-m);font-size:calc(var(--cw,240px)*.03);color:var(--dim);
+}
+.cf-foot .cls{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%}
+
+/* withdrawn band */
+.banned-band{
+  position:absolute;left:-8%;top:42%;z-index:8;width:116%;text-align:center;
+  background:rgba(255,84,112,.92);color:#2a060d;font-weight:800;letter-spacing:.3em;text-indent:.3em;
+  font-size:calc(var(--cw,240px)*.05);padding:3px 0;transform:rotate(-14deg);
+  box-shadow:0 4px 18px rgba(0,0,0,.5);
+}
+
+/* ---------- back (monograph) ---------- */
+.cb{
+  position:absolute;inset:0;padding:calc(var(--cw,240px)*.05);
+  display:flex;flex-direction:column;gap:calc(var(--cw,240px)*.024);
+  overflow:hidden;
+}
+.cb-head{display:flex;align-items:baseline;gap:8px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.cb-head .k{font-family:var(--font-m);font-size:calc(var(--cw,240px)*.028);letter-spacing:.2em;color:var(--ac)}
+.cb-head .n{font-weight:700;font-size:calc(var(--cw,240px)*.05);margin-left:auto;text-align:right}
+.cb-sec{font-size:calc(var(--cw,240px)*.034);line-height:1.35;color:var(--mut)}
+.cb-sec b{color:var(--ink);font-weight:600}
+.cb-sec .h{
+  font-family:var(--font-m);font-size:.78em;letter-spacing:.16em;color:var(--ac);
+  text-transform:uppercase;display:block;margin-bottom:2px;
+}
+.cb-tags{display:flex;flex-wrap:wrap;gap:4px}
+.cb-tag{font-family:var(--font-m);font-size:calc(var(--cw,240px)*.027);padding:1px 6px;border-radius:99px;background:rgba(255,255,255,.05);border:1px solid var(--line-soft);color:var(--mut)}
+.cb-lore{
+  margin-top:auto;font-family:var(--font-s);font-style:italic;
+  font-size:calc(var(--cw,240px)*.036);line-height:1.4;color:#c9b98a;
+  border-left:2px solid var(--gold);padding-left:8px;
+}
+.cb-scroll{overflow-y:auto;scrollbar-width:thin;flex:1;display:flex;flex-direction:column;gap:calc(var(--cw,240px)*.024);min-height:0}
+
+/* ---------- grid hover behaviour ---------- */
+.lib-grid .card{cursor:pointer;transition:translate .25s cubic-bezier(.2,.8,.3,1)}
+.lib-grid .card:hover{z-index:5}
+
+/* mini cards (hands, trays, pipeline) */
+.card.mini{--cw:118px}
+.card.mini .cf-name{font-size:calc(var(--cw)*.105)}
+.card.xmini{--cw:86px}
+.card.big{--cw:min(330px,70vw)}
+
+/* ---------- 3D Stacked Deck Spotlight Overlay ---------- */
+.spot-back{
+  position:fixed;inset:0;z-index:950;background:rgba(4,7,14,.94);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  animation:fadeIn .2s;touch-action:none;user-select:none;
+}
+.spot-stage{
+  position:relative;
+  width:min(330px,70vw);
+  aspect-ratio:63/88;
+  perspective:1200px;
+  transform-style:preserve-3d;
+  touch-action:none;
+  cursor:grab;
+  margin:4px auto;
+}
+.spot-stage.dragging{cursor:grabbing}
+.spot-card-layer{
+  position:absolute;inset:0;width:100%;height:100%;
+  transform-origin:center center;
+  will-change:transform,opacity;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+}
+.spot-card-layer.layer-top{
+  z-index:10;
+}
+.spot-card-layer.layer-next{
+  z-index:9;pointer-events:none;
+}
+.spot-card-layer.layer-third{
+  z-index:8;pointer-events:none;
+}
+.spot-card-layer.layer-prev{
+  z-index:12;pointer-events:none;
+}
+.spot-card-layer .card{
+  width:100%!important;
+  --cw:min(330px,70vw);
+  box-shadow:0 24px 50px -12px rgba(0,0,0,.85), 0 0 20px rgba(0,0,0,.6);
+}
+.spot-meta{text-align:center;animation:viewIn .3s}
+.spot-meta .nm{font-size:22px;font-weight:700}
+.spot-meta .sub{color:var(--mut);font-size:13px;font-family:var(--font-m);letter-spacing:.06em}
+.spot-nav{display:flex;align-items:center;gap:14px}
+.spot-hint{font-size:10.5px;color:var(--dim);letter-spacing:.14em;font-family:var(--font-m);text-align:center}
+.spot-count{font-family:var(--font-m);font-size:12px;color:var(--gold);letter-spacing:.2em;font-weight:700}
+
+@media(max-width:640px){
+  #hero-cards .hc{width:130px}
+}
+
+/* ============ HOLO FOIL MASTERY ============ */
+.card.mastery-foil {
+  border-radius: calc(var(--cw, 240px) * .055);
+  box-shadow: 0 0 10px 1px rgba(255, 209, 102, 0.45), 0 0 24px 4px rgba(255, 209, 102, 0.22) !important;
+}
+.card.mastery-foil .face {
+  border-color: #ffd166 !important;
+}
+.card.mastery-foil .holo {
+  opacity: 0.9 !important;
+  background: linear-gradient(135deg, rgba(255,0,128,0.25), rgba(0,255,255,0.25), rgba(255,255,0,0.25), rgba(0,255,0,0.25));
+  mix-blend-mode: color-dodge;
+}
+.badge-foil {
+  font-family: var(--font-m); font-size: 10.5px; font-weight: 800;
+  color: #070b14; background: linear-gradient(135deg, #ffd166, #ff8ba0, #4cc9f0);
+  padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;
+  letter-spacing: .08em; box-shadow: 0 0 10px rgba(255,209,102,0.5);
+}
+.badge-foil svg { width: 12px; height: 12px; }
+.foil-star { font-size: 14px; vertical-align: middle; filter: drop-shadow(0 0 6px rgba(255,209,102,0.8)); }
+
+/* ============ FLIP BUTTON TOUCH TARGET ============ */
+.flip-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 8;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(10, 16, 32, 0.72);
+  color: #8ea6c8;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.flip-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.card:hover .flip-btn {
+  opacity: 1;
+}
+.flip-btn:hover {
+  color: #fff;
+  border-color: var(--ac, #4cc9f0);
+  transform: scale(1.08);
+}
+@media (hover: none) {
+  .flip-btn {
+    opacity: 0.88 !important;
+  }
+}
