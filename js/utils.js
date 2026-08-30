@@ -321,6 +321,7 @@ function showClinicalDebriefModal({
   synergies = [],
   interactions = [],
   pearl = "",
+  actionLabel = "Continue",
   onClose = () => {}
 }) {
   const isWon = outcome === "won";
@@ -401,7 +402,7 @@ function showClinicalDebriefModal({
         </div>
       </div>`,
     actions: [
-      { label: "Close Debrief", primary: true, icon: "i-check" }
+      { label: actionLabel, primary: true, icon: "i-ar" }
     ]
   });
 

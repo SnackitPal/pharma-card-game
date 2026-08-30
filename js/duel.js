@@ -397,9 +397,15 @@ function renderCase(){
     </div>
     <div class="hand-cards" id="hand-cards"></div>
     <div class="duel-controls">
-      <button class="btn btn-sm" id="btn-consult" ${M.consultUsed||M.busy||!M.hands[0].length||deckRemaining===0?"disabled":""} title="Consult senior: Swap a card from hand for the next card in your deck (once per case)">${icon("i-refresh")}Consult senior <span class="deck-count-badge">(${deckRemaining} in deck)</span></button>
-      <button class="btn btn-sm" id="btn-pass">Pass turn</button>
-      <button class="btn btn-sm btn-primary" id="btn-resolve">${icon("i-check")}Resolve case</button>
+      <button class="btn btn-sm btn-ctrl" id="btn-consult" ${M.consultUsed||M.busy||!M.hands[0].length||deckRemaining===0?"disabled":""} title="Consult senior: Swap a card from hand for the next card in your deck">
+        ${icon("i-refresh")}<span class="ctrl-lbl">Senior</span> <span class="deck-count-badge">(${deckRemaining})</span>
+      </button>
+      <button class="btn btn-sm btn-ctrl" id="btn-pass" title="Pass turn to opponent">
+        ${icon("i-clock")}<span class="ctrl-lbl">Pass</span>
+      </button>
+      <button class="btn btn-sm btn-primary btn-ctrl" id="btn-resolve" title="Conclude case and calculate scores">
+        ${icon("i-check")}<span class="ctrl-lbl">Resolve</span>
+      </button>
     </div>
     <div class="duel-hint mono small dim" style="margin-top:8px;letter-spacing:.08em">CLICK CARD TO ADMINISTER · PASS TURN · RESOLVE ANYTIME · FORFEIT ↗</div>
     <div id="ai-thinking"></div>
@@ -713,39 +719,61 @@ async function resolveCase(early){
   // next / end / discharge debrief
   const acts=$("#next-case-actions");
   acts.innerHTML="";
-  
+
+  const done=M.score[0]>=2||M.score[1]>=2||M.caseNo>=3;
+  const yourOrders=M.chart.filter(e=>e.team===0).map(e=>e.d);
+
+  if(!M.caseSummaries) M.caseSummaries = [];
+  const curSummary = {
+    title: M.cs.n || `Clinical Case #${M.caseNo}`,
+    diagnosis: M.cs.ind || "Clinical Presentation",
+    outcome: winner===0?"won":winner===1?"lost":"draw",
+    score: r.totals[0],
+    rivalScore: r.totals[1],
+    rivalName: M.rival,
+    vitals: {
+      hr: M.ecg ? M.ecg.hr : 74,
+      bp: M.ecg && M.ecg.bpEl ? M.ecg.bpEl.textContent : "120/80",
+      spo2: M.ecg && M.ecg.spo2El ? M.ecg.spo2El.textContent : "98%",
+      tox: Math.round(r.toxTotals[0])
+    },
+    drugs: yourOrders,
+    synergies: r.synMsgs,
+    interactions: r.ixMsgs,
+    pearl: M.cs.pearl || (winner===0?"Target organ perfusion stabilized under guideline regimen.":"Review adverse drug interaction pathways before multi-agent ordering.")
+  };
+  M.caseSummaries.push(curSummary);
+
+  const openDebrief = () => {
+    showClinicalDebriefModal({
+      ...curSummary,
+      actionLabel: done ? "See Match Verdict" : "Next Clinical Case",
+      onClose: () => {
+        if(done){
+          endMatch();
+        } else {
+          box.hidden = true;
+          nextCase();
+        }
+      }
+    });
+  };
+
+  // Button in bottom ledger
   const debriefBtn=document.createElement("button");
   debriefBtn.className="btn btn-outline";
   debriefBtn.innerHTML=icon("i-flask")+"Discharge Summary";
-  debriefBtn.onclick=()=>{
-    const yourOrders=M.chart.filter(e=>e.team===0).map(e=>e.d);
-    showClinicalDebriefModal({
-      title:M.cs.n||`Case #${M.caseNo}`,
-      diagnosis:M.cs.ind||"Clinical Presentation",
-      outcome:winner===0?"won":winner===1?"lost":"draw",
-      score:r.totals[0],
-      rivalScore:r.totals[1],
-      rivalName:M.rival,
-      vitals:{
-        hr:M.ecg?M.ecg.hr:74,
-        bp:M.ecg&&M.ecg.bpEl?M.ecg.bpEl.textContent:"120/80",
-        spo2:M.ecg&&M.ecg.spo2El?M.ecg.spo2El.textContent:"98%",
-        tox:Math.round(r.toxTotals[0])
-      },
-      drugs:yourOrders,
-      synergies:r.synMsgs,
-      interactions:r.ixMsgs,
-      pearl:M.cs.pearl||(winner===0?"Target organ perfusion stabilized with guideline combination.":"Review adverse drug interaction pathways before multi-agent ordering.")
-    });
-  };
+  debriefBtn.onclick=openDebrief;
   acts.appendChild(debriefBtn);
 
-  const done=M.score[0]>=2||M.score[1]>=2||M.caseNo>=3;
   const btn=document.createElement("button");
   btn.className="btn btn-primary";
   if(done){btn.innerHTML=icon("i-flag")+"See verdict";btn.onclick=endMatch;}
   else{btn.innerHTML=icon("i-ar")+"Next case";btn.onclick=()=>{box.hidden=true;nextCase();};}
   acts.appendChild(btn);
+
+  // Automatically open the debrief modal after suspense
+  setTimeout(openDebrief, 650);
 }
 
 function endMatch(){
@@ -785,18 +813,40 @@ function endMatch(){
         </div>`:""}
       </div>`,
     actions:[
+      {label:"Review Discharge Report",val:"summary",icon:"i-flask"},
       {label:"Rematch",val:"again",primary:true,icon:"i-refresh"},
       {label:"Change deck",val:"setup"},
     ],
   }).then?.(null);
-  // wire buttons manually since Modal.ask resolves on click
+
   const backs=$$("#modal-root .modal-back");
   const top=backs[backs.length-1];
-  $$(".m-actions .btn",top).forEach((b,i)=>{
-    b.onclick=()=>{
-      Modal.close(top);
-      if(i===0)startMatch(M.deckId,M.diff);
-      else enterDuel();
+  const btns=$$(".m-actions .btn",top);
+  
+  if(btns[0]){ // Review Discharge Report
+    btns[0].onclick=()=>{
+      if(M.caseSummaries && M.caseSummaries.length){
+        const last = M.caseSummaries[M.caseSummaries.length - 1];
+        showClinicalDebriefModal({
+          ...last,
+          actionLabel: "Back to Match Verdict",
+          onClose: () => {
+            endMatch();
+          }
+        });
+      }
     };
-  });
+  }
+  if(btns[1]){ // Rematch
+    btns[1].onclick=()=>{
+      Modal.close(top);
+      startMatch(M.deckId,M.diff);
+    };
+  }
+  if(btns[2]){ // Change deck
+    btns[2].onclick=()=>{
+      Modal.close(top);
+      enterDuel();
+    };
+  }
 }
