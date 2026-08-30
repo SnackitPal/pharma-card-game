@@ -7,7 +7,7 @@
 "use strict";
 
 const Lib={
-  q:"",area:"ALL",rar:"ALL",era:"ALL",sort:"year_desc",mode:"grid",
+  q:"",area:"ALL",rar:"ALL",era:"ALL",sort:"year_desc",mode:"grid",quickTag:"ALL",
   built:false,
 };
 
@@ -63,6 +63,18 @@ function renderLibTools(){
       <button id="lib-vgrid" class="${Lib.mode==="grid"?"on":""}">${icon("i-grid")} Grid</button>
       <button id="lib-vspot" class="${Lib.mode==="spot"?"on":""}">${icon("i-stack")} Spotlight</button>
       <button id="lib-vcodex" class="${Lib.mode==="codex"?"on":""}">${icon("i-link")} Codex</button>
+    </div>
+    <div class="lib-quick-filters" id="lib-qf">
+      <button class="lib-qf-chip ${Lib.quickTag==="ALL"?"on":""}" data-qf="ALL">All (132)</button>
+      <button class="lib-qf-chip ${Lib.quickTag==="f80"?"on":""}" data-qf="f80">💊 High Oral F (≥80%)</button>
+      <button class="lib-qf-chip ${Lib.quickTag==="f_low"?"on":""}" data-qf="f_low">💉 IV / Non-Oral</button>
+      <button class="lib-qf-chip ${Lib.quickTag==="hl_short"?"on":""}" data-qf="hl_short">⚡ Short t½ (≤4h)</button>
+      <button class="lib-qf-chip ${Lib.quickTag==="hl_long"?"on":""}" data-qf="hl_long">⏳ Long t½ (≥24h)</button>
+      <button class="lib-qf-chip ${Lib.quickTag==="cyp3a4"?"on":""}" data-qf="cyp3a4">⚠️ CYP3A4 Pathway</button>
+      <button class="lib-qf-chip ${Lib.quickTag==="cyp2d6"?"on":""}" data-qf="cyp2d6">🧬 CYP2D6 Pathway</button>
+      <button class="lib-qf-chip ${Lib.quickTag==="qt"?"on":""}" data-qf="qt">💔 QTc Risk</button>
+      <button class="lib-qf-chip ${Lib.quickTag==="bio"?"on":""}" data-qf="bio">🧪 Biologics / mAbs</button>
+      <button class="lib-qf-chip ${Lib.quickTag==="foil"?"on":""}" data-qf="foil">⭐ Foil Mastered</button>
     </div>`;
 
   $("#lib-q").addEventListener("input",e=>{Lib.q=e.target.value;renderLibGrid();});
@@ -70,6 +82,22 @@ function renderLibTools(){
   $("#lib-rar").addEventListener("change",e=>{Lib.rar=e.target.value;renderLibGrid();});
   $("#lib-era").addEventListener("change",e=>{Lib.era=e.target.value;renderLibGrid();});
   $("#lib-sort").addEventListener("change",e=>{Lib.sort=e.target.value;renderLibGrid();});
+  
+  $("#lib-qf").addEventListener("click", e=>{
+    const btn=e.target.closest(".lib-qf-chip");
+    if(!btn) return;
+    Lib.quickTag = btn.dataset.qf;
+    $$(".lib-qf-chip", "#lib-qf").forEach(b=>b.classList.toggle("on", b===btn));
+    if(Lib.mode==="codex"){
+      Lib.mode="grid";
+      $("#lib-vgrid")?.classList.add("on");
+      $("#lib-vcodex")?.classList.remove("on");
+      $("#lib-vspot")?.classList.remove("on");
+    }
+    SFX.click();
+    renderLibGrid();
+  });
+
   $("#lib-vgrid").onclick=()=>{
     if(Lib.mode==="grid")return;
     Lib.mode="grid";
@@ -102,6 +130,17 @@ function libFiltered(){
     if(Lib.era==="classic")list=list.filter(d=>d.y<=1970);
     if(Lib.era==="modern")list=list.filter(d=>d.y>1970&&d.y<=2000);
     if(Lib.era==="new")list=list.filter(d=>d.y>=2001);
+  }
+  if(Lib.quickTag && Lib.quickTag!=="ALL"){
+    if(Lib.quickTag==="f80") list=list.filter(d=>d.F!=null&&d.F>=80);
+    else if(Lib.quickTag==="f_low") list=list.filter(d=>d.F==null||d.F<=20||d.rt==="IV");
+    else if(Lib.quickTag==="hl_short") list=list.filter(d=>d.hl!=null&&d.hl<=4);
+    else if(Lib.quickTag==="hl_long") list=list.filter(d=>d.hl!=null&&d.hl>=24);
+    else if(Lib.quickTag==="cyp3a4") list=list.filter(d=>(d.cyp&&d.cyp.includes("3A4"))||d.tags.includes("cyp3a4_sub")||d.tags.includes("cyp3a4_inh"));
+    else if(Lib.quickTag==="cyp2d6") list=list.filter(d=>(d.cyp&&d.cyp.includes("2D6"))||d.tags.includes("cyp2d6_sub")||d.tags.includes("cyp2d6_inh"));
+    else if(Lib.quickTag==="qt") list=list.filter(d=>d.tags.includes("qt_risk")||d.tags.includes("arrhythmia"));
+    else if(Lib.quickTag==="bio") list=list.filter(d=>d.cls.toLowerCase().includes("antibody")||d.cls.toLowerCase().includes("biologic")||d.cls.toLowerCase().includes("recombinant")||d.tags.includes("mab"));
+    else if(Lib.quickTag==="foil") list=list.filter(d=>typeof FoilMastery!=="undefined"&&FoilMastery.has(d.id));
   }
   const cmp={
     year_desc:(a,b)=>b.y-a.y, year_asc:(a,b)=>a.y-b.y,

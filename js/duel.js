@@ -710,9 +710,36 @@ async function resolveCase(early){
   }
   updatePips();
 
-  // next / end
+  // next / end / discharge debrief
   const acts=$("#next-case-actions");
   acts.innerHTML="";
+  
+  const debriefBtn=document.createElement("button");
+  debriefBtn.className="btn btn-outline";
+  debriefBtn.innerHTML=icon("i-flask")+"Discharge Summary";
+  debriefBtn.onclick=()=>{
+    const yourOrders=M.chart.filter(e=>e.team===0).map(e=>e.d);
+    showClinicalDebriefModal({
+      title:M.cs.n||`Case #${M.caseNo}`,
+      diagnosis:M.cs.ind||"Clinical Presentation",
+      outcome:winner===0?"won":winner===1?"lost":"draw",
+      score:r.totals[0],
+      rivalScore:r.totals[1],
+      rivalName:M.rival,
+      vitals:{
+        hr:M.ecg?M.ecg.hr:74,
+        bp:M.ecg&&M.ecg.bpEl?M.ecg.bpEl.textContent:"120/80",
+        spo2:M.ecg&&M.ecg.spo2El?M.ecg.spo2El.textContent:"98%",
+        tox:Math.round(r.toxTotals[0])
+      },
+      drugs:yourOrders,
+      synergies:r.synMsgs,
+      interactions:r.ixMsgs,
+      pearl:M.cs.pearl||(winner===0?"Target organ perfusion stabilized with guideline combination.":"Review adverse drug interaction pathways before multi-agent ordering.")
+    });
+  };
+  acts.appendChild(debriefBtn);
+
   const done=M.score[0]>=2||M.score[1]>=2||M.caseNo>=3;
   const btn=document.createElement("button");
   btn.className="btn btn-primary";

@@ -16,7 +16,13 @@ class ECGMonitor {
     }, options);
 
     this.tox = 0;
+    this.hr = 74;
+    this.sys = 120;
+    this.dia = 80;
+    this.spo2 = 98;
+    this.qtc = 410;
     this.hasQT = false;
+    this.severeArrhythmia = false;
     this.isFlatline = false;
     this.running = false;
     this.rafId = null;
@@ -36,9 +42,10 @@ class ECGMonitor {
           <div class="ecg-lead"><span>LEAD II · 25mm/s</span></div>
           <div class="ecg-rhythm" id="ecg-rhythm">NORMAL SINUS RHYTHM</div>
           <div class="ecg-stats">
-            <span class="ecg-hr-wrap">HR: <b id="ecg-hr" class="ecg-val">72</b> <small>BPM</small></span>
+            <span class="ecg-hr-wrap">HR: <b id="ecg-hr" class="ecg-val">74</b> <small>BPM</small></span>
+            <span class="ecg-bp-wrap">BP: <b id="ecg-bp" class="ecg-val">120/80</b></span>
+            <span class="ecg-spo2-wrap">SpO2: <b id="ecg-spo2" class="ecg-val">98%</b></span>
             <span class="ecg-qt-wrap">QTc: <b id="ecg-qt" class="ecg-val">410</b> <small>ms</small></span>
-            <span class="ecg-tox-wrap">TOX: <b id="ecg-tox" class="ecg-val">0</b></span>
           </div>
         </div>
         <div class="ecg-canvas-wrap">
@@ -50,8 +57,9 @@ class ECGMonitor {
     this.canvas = this.container.querySelector(".ecg-canvas");
     this.rhythmEl = this.container.querySelector("#ecg-rhythm");
     this.hrEl = this.container.querySelector("#ecg-hr");
+    this.bpEl = this.container.querySelector("#ecg-bp");
+    this.spo2El = this.container.querySelector("#ecg-spo2");
     this.qtEl = this.container.querySelector("#ecg-qt");
-    this.toxEl = this.container.querySelector("#ecg-tox");
     this.ctx = this.canvas ? this.canvas.getContext("2d") : null;
 
     this.resize();
@@ -84,14 +92,86 @@ class ECGMonitor {
     this.updateHUD();
   }
 
+  updateVitalsFromDrugs(drugs = [], baseHR = 74, baseSys = 120, baseDia = 80, baseSpO2 = 98) {
+    let hrDelta = 0;
+    let sysDelta = 0;
+    let diaDelta = 0;
+    let spo2Delta = 0;
+    let qtExt = false;
+    let severeArrhythmia = false;
+
+    const drugIds = drugs.map(d => (d && d.id) || d);
+    const drugObjs = drugIds.map(id => typeof id === "string" && typeof DRUG !== "undefined" ? DRUG[id] : id).filter(Boolean);
+
+    drugObjs.forEach(d => {
+      const cls = (d.cls || "").toLowerCase();
+      const tags = d.tags || [];
+
+      // 1. Heart rate & BP lowering (Beta-blockers, CCBs, Digoxin)
+      if (tags.includes("bb") || cls.includes("beta-block") || cls.includes("calcium channel") || d.id === "dig") {
+        hrDelta -= 12;
+        sysDelta -= 10;
+        diaDelta -= 6;
+      }
+      // 2. Sympathomimetics / Tachycardia (SABA, Epinephrine, Theophylline, Amphetamines)
+      if (cls.includes("agonist") && (cls.includes("beta") || cls.includes("adrenerg")) || d.id === "epi" || d.id === "salb" || d.id === "theo") {
+        hrDelta += 18;
+        sysDelta += 8;
+      }
+      if (cls.includes("anticholinergic") || tags.includes("anticholinergic") || d.id === "atro") {
+        hrDelta += 14;
+      }
+      // 3. Vasodilators & Antihypertensives (ACEi, ARB, Diuretics, Nitrates)
+      if (tags.includes("acei") || tags.includes("arb") || tags.includes("diuretic") || tags.includes("nitrate") || cls.includes("vasodilator")) {
+        sysDelta -= 14;
+        diaDelta -= 9;
+      }
+      // 4. Respiratory Depression (Opioids, Benzodiazepines)
+      if (tags.includes("opioid") || tags.includes("benzo") || cls.includes("sedative")) {
+        spo2Delta -= 3;
+      }
+      // 5. QTc Prolongation
+      if (tags.includes("qt_risk") || cls.includes("antiarrhythmic") || cls.includes("macrolide") || cls.includes("fluoroquinolone") || d.id === "amio" || d.id === "sotalol" || d.id === "hal") {
+        qtExt = true;
+      }
+    });
+
+    // Hazardous DDI Combinations
+    const hasNitrate = drugObjs.some(d => (d.tags && d.tags.includes("nitrate")) || d.id === "ntg");
+    const hasPDE5 = drugObjs.some(d => d.id === "sild" || d.id === "tad");
+    if (hasNitrate && hasPDE5) {
+      sysDelta -= 45;
+      diaDelta -= 30;
+      hrDelta += 28; // reflex tachycardia
+      severeArrhythmia = true;
+    }
+
+    const hasOpioid = drugObjs.some(d => (d.tags && d.tags.includes("opioid")) || d.id === "morph" || d.id === "fent");
+    const hasBenzo = drugObjs.some(d => (d.tags && d.tags.includes("benzo")) || d.id === "diaz" || d.id === "midaz");
+    if (hasOpioid && hasBenzo) {
+      spo2Delta -= 8;
+    }
+
+    this.hr = Math.max(34, Math.min(185, Math.round(baseHR + hrDelta + (this.tox * 2.2))));
+    this.sys = Math.max(52, Math.min(220, Math.round(baseSys + sysDelta)));
+    this.dia = Math.max(32, Math.min(130, Math.round(baseDia + diaDelta)));
+    this.spo2 = Math.max(76, Math.min(100, Math.round(baseSpO2 + spo2Delta)));
+    this.qtc = Math.round(410 + (qtExt ? 110 : 0) + (this.tox * 3.5));
+    this.hasQT = qtExt;
+    this.severeArrhythmia = severeArrhythmia;
+
+    this.updateHUD();
+  }
+
   updateHUD() {
     if (!this.hrEl) return;
-    const hr = this.isFlatline ? 0 : Math.round(72 + Math.min(78, this.tox * 2.6) + (this.hasQT ? -6 : 0));
-    const qtc = this.isFlatline ? 0 : Math.round(410 + (this.hasQT ? 115 : 0) + this.tox * 3.5);
+    const hr = this.isFlatline ? 0 : this.hr;
+    const qtc = this.isFlatline ? 0 : this.qtc;
 
     this.hrEl.textContent = hr;
+    if (this.bpEl) this.bpEl.textContent = this.isFlatline ? "0/0" : `${this.sys}/${this.dia}`;
+    if (this.spo2El) this.spo2El.textContent = this.isFlatline ? "0%" : `${this.spo2}%`;
     this.qtEl.textContent = qtc;
-    this.toxEl.textContent = Math.round(this.tox);
 
     let status = "NORMAL SINUS RHYTHM";
     let color = "var(--mint, #2fd6a5)";
@@ -99,20 +179,28 @@ class ECGMonitor {
     if (this.isFlatline) {
       status = "ASYSTOLE / CARDIAC ARREST";
       color = "var(--rose, #ff5470)";
-    } else if (this.tox >= 22) {
-      status = "VENTRICULAR FIBRILLATION / ARREST IMMINENT";
+    } else if (this.severeArrhythmia || this.tox >= 22) {
+      status = "VENTRICULAR TACHYCARDIA / COLLAPSE";
       color = "var(--rose, #ff5470)";
-    } else if (this.hasQT && this.tox >= 10) {
-      status = "LONG QT SYNDROME · TORSADES RISK";
+    } else if (this.hasQT && (this.tox >= 8 || this.hr >= 110)) {
+      status = "LONG QT · TORSADES RISK";
       color = "var(--gold, #ffd166)";
-    } else if (this.tox >= 12) {
+    } else if (this.spo2 < 90) {
+      status = "ACUTE HYPOXIA / RESPIRATORY DEPRESSION";
+      color = "var(--rose, #ff5470)";
+    } else if (this.hr >= 105) {
       status = "SINUS TACHYCARDIA";
       color = "var(--gold, #ffd166)";
+    } else if (this.hr <= 54) {
+      status = "SINUS BRADYCARDIA";
+      color = "var(--sky, #4cc9f0)";
     }
 
     this.rhythmEl.textContent = status;
     this.rhythmEl.style.color = color;
-    this.hrEl.style.color = this.tox > 15 ? "var(--rose, #ff5470)" : "inherit";
+    this.hrEl.style.color = (this.hr > 115 || this.hr < 50) ? "var(--rose, #ff5470)" : "inherit";
+    if (this.bpEl) this.bpEl.style.color = (this.sys < 90 || this.sys > 175) ? "var(--rose, #ff5470)" : "inherit";
+    if (this.spo2El) this.spo2El.style.color = (this.spo2 < 92) ? "var(--rose, #ff5470)" : "inherit";
     this.qtEl.style.color = this.hasQT ? "var(--gold, #ffd166)" : "inherit";
   }
 
@@ -231,8 +319,8 @@ class ECGMonitor {
       const dt = (t - this.lastTime) / 1000;
       this.lastTime = t;
 
-      const hr = this.isFlatline ? 0 : (72 + Math.min(78, this.tox * 2.6));
-      const freq = hr / 60; // beats per second
+      const hr = this.isFlatline ? 0 : this.hr;
+      const freq = Math.max(0.5, hr / 60); // beats per second
 
       if (!this.isFlatline) {
         this.phase = (this.phase + dt * freq * 0.8) % 1.0;

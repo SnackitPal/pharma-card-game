@@ -987,3 +987,239 @@
     font-size: 12px;
   }
 }
+
+/* ============ COMPENDIUM QUICK FILTER CHIPS ============ */
+.lib-quick-filters {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+.lib-qf-chip {
+  padding: 6px 13px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  color: var(--mut);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  white-space: nowrap;
+}
+.lib-qf-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--dim);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+.lib-qf-chip.on {
+  background: rgba(76, 201, 240, 0.16);
+  border-color: var(--acc);
+  color: var(--acc);
+  box-shadow: 0 0 12px rgba(76, 201, 240, 0.22);
+}
+
+/* ============ CLINICAL DISCHARGE & DEBRIEF SUMMARY ============ */
+.deb-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.deb-top-card {
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(14, 24, 46, 0.9), rgba(8, 14, 28, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.deb-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
+}
+.deb-meta-val {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 2px;
+}
+.deb-status-row {
+  display: flex;
+  align-items: center;
+}
+.discharge-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-m);
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 99px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.discharge-badge svg {
+  width: 14px !important;
+  height: 14px !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.discharge-badge.good {
+  background: rgba(47, 214, 165, 0.16);
+  color: var(--mint);
+  border: 1px solid rgba(47, 214, 165, 0.4);
+}
+.discharge-badge.bad {
+  background: rgba(255, 84, 112, 0.16);
+  color: var(--rose);
+  border: 1px solid rgba(255, 84, 112, 0.4);
+}
+.discharge-badge.warn {
+  background: rgba(255, 209, 102, 0.16);
+  color: var(--gold);
+  border: 1px solid rgba(255, 209, 102, 0.4);
+}
+.deb-vitals-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+}
+.deb-vital small {
+  display: block;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+.deb-vital b {
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.deb-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.deb-sec-title {
+  font-family: var(--font-m);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+}
+.deb-sec-title.good { color: var(--mint); }
+.deb-sec-title.bad { color: var(--rose); }
+.deb-sec-title svg { width: 13px; height: 13px; }
+.deb-rx-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.deb-rx-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+}
+.deb-rx-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ac, var(--acc));
+  flex-shrink: 0;
+}
+.deb-rx-info {
+  flex: 1;
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+.deb-rx-moa {
+  font-size: 11px;
+  color: var(--mut);
+}
+.deb-rx-stats {
+  font-size: 11.5px;
+  color: var(--dim);
+  flex-shrink: 0;
+}
+.deb-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.deb-event {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.deb-event.good {
+  background: rgba(47, 214, 165, 0.08);
+  border: 1px solid rgba(47, 214, 165, 0.22);
+  color: #bbf7d0;
+}
+.deb-event.bad {
+  background: rgba(255, 84, 112, 0.08);
+  border: 1px solid rgba(255, 84, 112, 0.22);
+  color: #fecdd3;
+}
+.deb-event svg { width: 13px; height: 13px; flex-shrink: 0; }
+.deb-pearl {
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(255, 209, 102, 0.08) 0%, rgba(20, 28, 48, 0.8) 100%);
+  border: 1px solid rgba(255, 209, 102, 0.3);
+  border-radius: 12px;
+}
+.deb-pearl-head {
+  font-family: var(--font-m);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--gold);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+}
+.deb-pearl-head svg { width: 13px; height: 13px; }
+.deb-pearl p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink);
+  line-height: 1.45;
+}
+
+@media (max-width: 600px) {
+  .deb-vitals-strip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .deb-meta-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

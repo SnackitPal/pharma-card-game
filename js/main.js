@@ -337,14 +337,33 @@ const DailyCase = {
           <div class="share-box panel" style="padding:12px;text-align:left;font-family:var(--font-mono);font-size:12px;white-space:pre-wrap;background:rgba(0,0,0,0.3)">${esc(shareText)}</div>
         </div>`,
       actions: [
-        {label: "Copy Result to Clipboard", val: "copy", primary: true, icon: "i-stack"},
+        {label: "Discharge Summary", val: "debrief", icon: "i-flask"},
+        {label: "Copy Result", val: "copy", primary: true, icon: "i-stack"},
         {label: "Close", val: "close"}
       ]
     }).then?.(null);
 
     const backs = $$("#modal-root .modal-back");
     const top = backs[backs.length-1];
+    const debriefBtn = $(".m-actions .btn:nth-child(1)", top);
     const copyBtn = $(".m-actions .btn-primary", top);
+    
+    if(debriefBtn){
+      debriefBtn.onclick = ()=>{
+        showClinicalDebriefModal({
+          title: `Daily Case (${cs.ind})`,
+          diagnosis: cs.ind,
+          outcome: data.cured ? "won" : "lost",
+          score: data.score,
+          vitals: { hr: data.cured ? 68 : 118, bp: data.cured ? "118/76" : "148/94", spo2: data.cured ? "99%" : "91%", tox: data.chartTox },
+          drugs: data.drugs,
+          synergies: data.synMsgs || [],
+          interactions: data.ixMsgs || [],
+          pearl: cs.pearl || (data.cured ? "Guideline-concordant therapy achieved optimal therapeutic index." : "Monitor for clinical contraindications and drug metabolism competition.")
+        });
+      };
+    }
+
     if(copyBtn){
       copyBtn.onclick = ()=>{
         if(navigator.clipboard && navigator.clipboard.writeText){

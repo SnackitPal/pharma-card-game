@@ -307,3 +307,109 @@ const Store={
   set(k,v){try{localStorage.setItem("ti_"+k,JSON.stringify(v));}catch(e){}},
   del(k){try{localStorage.removeItem("ti_"+k);}catch(e){}},
 };
+
+/* ---------- Post-Case Clinical Debrief & Discharge Summary ---------- */
+function showClinicalDebriefModal({
+  title = "Case Debrief",
+  diagnosis = "Clinical Presentation",
+  outcome = "won",
+  score = 0,
+  rivalScore = null,
+  rivalName = null,
+  vitals = { hr: 74, bp: "120/80", spo2: "98%", tox: 0 },
+  drugs = [],
+  synergies = [],
+  interactions = [],
+  pearl = "",
+  onClose = () => {}
+}) {
+  const isWon = outcome === "won";
+  const statusBadge = isWon
+    ? `<span class="discharge-badge good">${icon("i-check")} STABLE DISCHARGE / CLINICAL REMISSION</span>`
+    : outcome === "lost"
+    ? `<span class="discharge-badge bad">${icon("i-alert")} ICU TRANSFER / TOXICITY EVENT</span>`
+    : `<span class="discharge-badge warn">${icon("i-info")} EQUIVOCAL STABILIZATION</span>`;
+
+  const drugListHTML = drugs.map(d => {
+    const drugObj = typeof d === "string" && typeof DRUG !== "undefined" ? DRUG[d] : d;
+    if (!drugObj) return "";
+    const col = (typeof AREAS !== "undefined" && AREAS[drugObj.a]?.c) || "var(--acc)";
+    return `
+      <div class="deb-rx-item" style="--ac:${col}">
+        <span class="deb-rx-dot"></span>
+        <div class="deb-rx-info">
+          <b>${esc(drugObj.n)}</b> <span class="dim">(${esc(drugObj.cls)})</span>
+          <div class="deb-rx-moa">${esc(drugObj.moa)}</div>
+        </div>
+        <span class="deb-rx-stats mono"><b>${drugObj.eff}/10</b> EFF · <b>${drugObj.saf}/10</b> SAF</span>
+      </div>`;
+  }).join("");
+
+  const synHTML = synergies.length ? `
+    <div class="deb-section">
+      <div class="deb-sec-title good">${icon("i-link")} GUIDELINE SYNERGIES TRIGGERED</div>
+      <div class="deb-events-list">
+        ${synergies.map(s => `<div class="deb-event good">${icon("i-spark")} <span>${esc(s)}</span></div>`).join("")}
+      </div>
+    </div>` : "";
+
+  const ixHTML = interactions.length ? `
+    <div class="deb-section">
+      <div class="deb-sec-title bad">${icon("i-alert")} ADVERSE INTERACTIONS / DDI PENALTIES</div>
+      <div class="deb-events-list">
+        ${interactions.map(ix => `<div class="deb-event bad">${icon("i-skull")} <span>${esc(ix)}</span></div>`).join("")}
+      </div>
+    </div>` : "";
+
+  const pearlText = pearl || (isWon
+    ? "Guideline-directed medical therapy successfully balanced target organ perfusion while mitigating off-target receptor toxicity."
+    : "Review metabolic clearance (CYP450 / renal) and synergistic pharmacodynamics when prescribing multiple active agents.");
+
+  const back = Modal.open({
+    wide: true,
+    kicker: "CLINICAL AUDIT · MORBIDITY & DISCHARGE REPORT",
+    title: `Discharge Summary: ${esc(title)}`,
+    html: `
+      <div class="deb-wrap">
+        <div class="deb-top-card panel">
+          <div class="deb-meta-row">
+            <div><small class="mono dim">DIAGNOSIS</small><div class="deb-meta-val">${esc(diagnosis)}</div></div>
+            <div><small class="mono dim">CLINICAL AUDIT SCORE</small><div class="deb-meta-val" style="color:${isWon?"var(--mint)":"var(--rose)"}">${score>=0?"+":""}${score.toFixed(1)} PTS</div></div>
+            ${rivalScore!=null?`<div><small class="mono dim">RIVAL (${esc(rivalName||"RIVAL")})</small><div class="deb-meta-val">${rivalScore.toFixed(1)} PTS</div></div>`:""}
+          </div>
+          <div class="deb-status-row">${statusBadge}</div>
+        </div>
+
+        <div class="deb-vitals-strip mono panel">
+          <div class="deb-vital"><small>HEART RATE</small><b style="color:${vitals.hr>115||vitals.hr<52?"var(--rose)":"var(--mint)"}">${vitals.hr} BPM</b></div>
+          <div class="deb-vital"><small>BLOOD PRESSURE</small><b>${vitals.bp||"120/80"} mmHg</b></div>
+          <div class="deb-vital"><small>SpO2</small><b style="color:${parseInt(vitals.spo2)<92?"var(--rose)":"var(--mint)"}">${vitals.spo2||"98%"}</b></div>
+          <div class="deb-vital"><small>SYSTEMIC TOXICITY</small><b style="color:${vitals.tox>15?"var(--rose)":"var(--mint)"}">${vitals.tox}</b></div>
+        </div>
+
+        <div class="deb-section">
+          <div class="deb-sec-title">${icon("i-flask")} ADMINISTERED REGIMEN & PHARMACOLOGY</div>
+          <div class="deb-rx-list">${drugListHTML || "<p class='dim'>No medications ordered.</p>"}</div>
+        </div>
+
+        ${synHTML}
+        ${ixHTML}
+
+        <div class="deb-pearl panel">
+          <div class="deb-pearl-head">${icon("i-star")} KEY CLINICAL PEARL</div>
+          <p>${esc(pearlText)}</p>
+        </div>
+      </div>`,
+    actions: [
+      { label: "Close Debrief", primary: true, icon: "i-check" }
+    ]
+  });
+
+  const nextBtn = back.querySelector(".m-actions .btn");
+  if (nextBtn) {
+    nextBtn.onclick = () => {
+      Modal.close(back);
+      if (onClose) onClose();
+    };
+  }
+}
