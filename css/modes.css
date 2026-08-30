@@ -756,9 +756,11 @@
 
 /* ============ INTERACTIONS & SYNERGIES CODEX ============ */
 .codex-wrap {
+  grid-column: 1 / -1;
   width: 100%;
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 .codex-tabs {
   display: flex;
