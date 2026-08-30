@@ -124,63 +124,53 @@ const Modal={
       }
     });
 
-    // Touch pull-down / swipe-to-dismiss on touchscreens
+    // Strict pull-down: ONLY on the dedicated top handle pill (.modal-handle)
+    // Never intercepts touches on the modal body, text, or content
     const modalEl=$(".modal",back);
-    if(modalEl){
-      let startY=null,curY=null,isDraggingDown=false;
-      const canStartDrag = target => {
-        if(noClose) return false;
-        // Don't intercept button/input/interactive clicks or inner scrollable containers not at top
-        if(target.closest('button, a, input, select, textarea, .fchip, .choice-card, .btn')) return false;
-        const scrollable = target.closest('.det-pane, .ach-grid, .cm-pool-grid, .m-body, .modal');
-        if(scrollable && scrollable.scrollTop > 0) return false;
-        return true;
-      };
-
+    const handleEl=$(".modal-handle",back);
+    if(handleEl&&modalEl){
+      let startY=null,curY=null,isDraggingHandle=false;
       const onTouchStart=e=>{
-        if(!canStartDrag(e.target)) return;
+        if(noClose) return;
         startY=e.touches[0].clientY;
         curY=startY;
-        isDraggingDown=false;
+        isDraggingHandle=true;
       };
       const onTouchMove=e=>{
-        if(startY==null||noClose)return;
+        if(startY==null||!isDraggingHandle||noClose) return;
         curY=e.touches[0].clientY;
         const dy=curY-startY;
-        if(dy > 6 && modalEl.scrollTop <= 0){
-          isDraggingDown = true;
+        if(dy>0){
           modalEl.style.transition="none";
           modalEl.style.transform=`translateY(${dy}px)`;
-          back.style.background = `rgba(4,7,14,${Math.max(0.2, 0.72 * (1 - dy / 400))})`;
+          back.style.background=`rgba(4,7,14,${Math.max(0.2, 0.72*(1 - dy/500))})`;
         }
       };
       const onTouchEnd=e=>{
-        if(startY==null||noClose)return;
-        if(e.changedTouches && e.changedTouches.length){
-          curY = e.changedTouches[0].clientY;
+        if(startY==null||!isDraggingHandle||noClose) return;
+        if(e.changedTouches&&e.changedTouches.length){
+          curY=e.changedTouches[0].clientY;
         }
-        if(isDraggingDown || (curY != null && (curY - startY) > 75)){
-          const dy=curY-startY;
-          if(dy>75){
-            modalEl.style.transition="transform .22s ease-out";
-            modalEl.style.transform="translateY(100%)";
-            back.style.transition="opacity .2s";
-            back.style.opacity="0";
-            Haptics.light();
-            setTimeout(()=>Modal.resolve(back,null),180);
-          }else{
-            modalEl.style.transition="transform .24s cubic-bezier(.2,1.2,.3,1)";
-            modalEl.style.transform="";
-            back.style.background="";
-          }
+        const dy=curY-startY;
+        if(dy>120){
+          modalEl.style.transition="transform .22s ease-out";
+          modalEl.style.transform="translateY(100%)";
+          back.style.transition="opacity .2s";
+          back.style.opacity="0";
+          Haptics.light();
+          setTimeout(()=>Modal.resolve(back,null),180);
+        }else{
+          modalEl.style.transition="transform .24s cubic-bezier(.2,1.2,.3,1)";
+          modalEl.style.transform="";
+          back.style.background="";
         }
-        startY=null;curY=null;isDraggingDown=false;
+        startY=null;curY=null;isDraggingHandle=false;
       };
 
-      modalEl.addEventListener("touchstart",onTouchStart,{passive:true});
-      modalEl.addEventListener("touchmove",onTouchMove,{passive:true});
-      modalEl.addEventListener("touchend",onTouchEnd,{passive:true});
-      modalEl.addEventListener("touchcancel",onTouchEnd,{passive:true});
+      handleEl.addEventListener("touchstart",onTouchStart,{passive:true});
+      handleEl.addEventListener("touchmove",onTouchMove,{passive:true});
+      handleEl.addEventListener("touchend",onTouchEnd,{passive:true});
+      handleEl.addEventListener("touchcancel",onTouchEnd,{passive:true});
     }
 
     $("#modal-root").appendChild(back);

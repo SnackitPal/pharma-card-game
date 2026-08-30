@@ -694,26 +694,45 @@ function animateRails(scope){
   setTimeout(()=>$$(".rail .rt i",scope).forEach(i=>i.style.width=i.dataset.w+"%"),60);
 }
 
-/* ---------- 3D tilt + glare ---------- */
+/* ---------- 3D tilt + glare (Touch & Mouse) ---------- */
 function attachTilt(el){
-  if(REDUCED||matchMedia("(hover:none)").matches)return;
+  if(REDUCED)return;
   const inner=$(".cin",el);
-  el.addEventListener("pointermove",e=>{
-    const r=el.getBoundingClientRect();
-    const px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+  if(!inner)return;
+
+  const setTilt=(px,py)=>{
     el.classList.add("tilting");
-    inner.style.transform=`rotateX(${((py-0.5)*-13).toFixed(2)}deg) rotateY(${((px-0.5)*15).toFixed(2)}deg)`;
+    inner.style.transform=`rotateX(${((py-0.5)*-14).toFixed(2)}deg) rotateY(${((px-0.5)*16).toFixed(2)}deg)`;
     el.style.setProperty("--gx",(px*100).toFixed(1)+"%");
     el.style.setProperty("--gy",(py*100).toFixed(1)+"%");
-  });
-  el.addEventListener("pointerleave",()=>{
+  };
+
+  const resetTilt=()=>{
     el.classList.remove("tilting");
     inner.style.transform="";
+  };
+
+  // Pointer / Mouse move
+  el.addEventListener("pointermove",e=>{
+    if(e.pointerType==="touch")return;
+    const r=el.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+    setTilt(px,py);
   });
-  el.addEventListener("pointercancel",()=>{
-    el.classList.remove("tilting");
-    inner.style.transform="";
-  });
+  el.addEventListener("pointerleave",resetTilt);
+  el.addEventListener("pointercancel",resetTilt);
+
+  // Mobile Touch drag tilt
+  el.addEventListener("touchmove",e=>{
+    if(!e.touches||!e.touches[0])return;
+    const r=el.getBoundingClientRect();
+    const t=e.touches[0];
+    const px=Math.max(0,Math.min(1,(t.clientX-r.left)/r.width));
+    const py=Math.max(0,Math.min(1,(t.clientY-r.top)/r.height));
+    setTilt(px,py);
+  },{passive:true});
+  el.addEventListener("touchend",resetTilt,{passive:true});
+  el.addEventListener("touchcancel",resetTilt,{passive:true});
 }
 
 /* ---------- art-picker styles (injected once) ---------- */
@@ -749,47 +768,48 @@ const GyroTilt = {
 
   init() {
     if (this.listening || typeof window === "undefined" || REDUCED) return;
-    if (!window.DeviceOrientationEvent) return;
 
-    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+    const startListener = () => {
+      this.listening = true;
+      const handleOrientation = e => {
+        if (e.gamma == null || e.beta == null) return;
+        const rawX = Math.max(-1, Math.min(1, e.gamma / 22));
+        const rawY = Math.max(-1, Math.min(1, (e.beta - 45) / 22));
+        this.targetX = rawX;
+        this.targetY = rawY;
+
+        if (!this.enabled) {
+          this.enabled = true;
+          this.loop();
+        }
+      };
+
+      window.addEventListener("deviceorientation", handleOrientation, true);
+      window.addEventListener("deviceorientationabsolute", handleOrientation, true);
+    };
+
+    if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
       DeviceOrientationEvent.requestPermission()
         .then(state => {
-          if (state === "granted") this.bind();
+          if (state === "granted") startListener();
         })
         .catch(() => {});
     } else {
-      this.bind();
+      startListener();
     }
-  },
-
-  bind() {
-    if (this.listening) return;
-    this.listening = true;
-    window.addEventListener("deviceorientation", e => {
-      if (e.gamma == null || e.beta == null) return;
-      const rawX = Math.max(-1, Math.min(1, e.gamma / 26));
-      const rawY = Math.max(-1, Math.min(1, (e.beta - 42) / 26));
-      this.targetX = rawX;
-      this.targetY = rawY;
-
-      if (!this.enabled) {
-        this.enabled = true;
-        this.loop();
-      }
-    }, { passive: true });
   },
 
   loop() {
     if (!this.enabled) return;
-    this.curX += (this.targetX - this.curX) * 0.12;
-    this.curY += (this.targetY - this.curY) * 0.12;
+    this.curX += (this.targetX - this.curX) * 0.14;
+    this.curY += (this.targetY - this.curY) * 0.14;
 
     const px = (((this.curX + 1) / 2) * 100).toFixed(1);
     const py = (((this.curY + 1) / 2) * 100).toFixed(1);
-    const rotX = (this.curY * -12).toFixed(2);
-    const rotY = (this.curX * 14).toFixed(2);
+    const rotX = (this.curY * -14).toFixed(2);
+    const rotY = (this.curX * 16).toFixed(2);
 
-    const targets = document.querySelectorAll(".modal .card, .spot-card-layer.layer-top .card, .card.mastery-foil");
+    const targets = document.querySelectorAll(".modal .card, .det-card, .card.big, .spot-card-layer.layer-top .card, .card.mastery-foil");
     targets.forEach(card => {
       if (!card.classList.contains("tilting")) {
         const inner = card.querySelector(".cin");

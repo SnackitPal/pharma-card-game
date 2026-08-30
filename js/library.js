@@ -740,6 +740,7 @@ function openDetail(d){
 
   const slot=$("#det-card-slot",back);
   const card=makeCard(d,{size:"big"});
+  card.classList.add("det-card");
   slot.appendChild(card);
 
   // art plate switcher — view the molecule through 6 scientific lenses

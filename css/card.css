@@ -52,38 +52,53 @@
   background-repeat:no-repeat;opacity:.65;
 }
 
-/* holo foil overlay — intensity by rarity */
+/* holo foil overlay — vivid rainbow diffraction & specular reflection */
 .holo{
   position:absolute;inset:0;z-index:6;pointer-events:none;border-radius:inherit;
   background:
-    repeating-linear-gradient(115deg,
-      transparent 0 9px,
-      rgba(255,120,180,.10) 10px 13px,
-      transparent 14px 26px,
-      rgba(120,220,255,.10) 27px 30px,
-      transparent 31px 44px,
-      rgba(255,230,140,.09) 45px 47px),
     radial-gradient(120% 90% at var(--gx,50%) var(--gy,50%),
-      rgba(255,255,255,.22),transparent 42%);
+      rgba(255,255,255,.45) 0%,
+      rgba(255,209,102,.35) 20%,
+      rgba(76,201,240,.35) 45%,
+      rgba(255,84,112,.30) 70%,
+      transparent 90%),
+    repeating-linear-gradient(calc(var(--gx,50%) * 2.4deg),
+      rgba(255,84,112,.15) 0px,
+      rgba(255,209,102,.18) 14px,
+      rgba(47,214,165,.18) 28px,
+      rgba(76,201,240,.18) 42px,
+      rgba(167,139,250,.18) 56px);
   mix-blend-mode:color-dodge;
-  opacity:0;transition:opacity .25s;
+  opacity:0;transition:opacity .22s;
 }
-.card[data-r="RARE"] .holo{opacity:.28}
-.card[data-r="EPIC"] .holo{opacity:.45}
-.card[data-r="LEGEND"] .holo{opacity:.62}
+.card[data-r="RARE"] .holo{opacity:.35}
+.card[data-r="EPIC"] .holo{opacity:.55}
+.card[data-r="LEGEND"] .holo{opacity:.75;animation:hueShift 6s linear infinite}
 .card[data-r="BANNED"] .holo{opacity:0}
-.card:hover .holo,.card.spotlight .holo{opacity:max(.35,.62)}
-.card[data-r="LEGEND"] .holo{animation:hueShift 6s linear infinite}
+.card.tilting .holo,
+.card:hover .holo,
+.det-card .holo,
+.modal .card .holo,
+.spot-card-layer .card .holo,
+.card.mastery-foil .holo{
+  opacity:.85!important;
+}
 @keyframes hueShift{to{filter:hue-rotate(360deg)}}
 .card[data-r="BANNED"] .face{filter:saturate(.25) brightness(.85)}
 
-/* pointer glare */
+/* pointer & gyro glare */
 .glare{
   position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:inherit;
-  background:radial-gradient(circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.28),transparent 46%);
-  opacity:0;transition:opacity .25s;mix-blend-mode:screen;
+  background:radial-gradient(circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.55) 0%,rgba(255,255,255,.12) 35%,transparent 70%);
+  opacity:0;transition:opacity .22s;mix-blend-mode:screen;
 }
-.card:hover .glare{opacity:1}
+.card.tilting .glare,
+.card:hover .glare,
+.det-card .glare,
+.modal .card .glare,
+.spot-card-layer .card .glare{
+  opacity:.88!important;
+}
 
 /* ---------- front layout ---------- */
 .cf{position:absolute;inset:0;padding:calc(var(--cw,240px)*.05);display:flex;flex-direction:column;gap:calc(var(--cw,240px)*.028)}
