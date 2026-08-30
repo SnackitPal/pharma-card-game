@@ -137,72 +137,198 @@ function renderLibGrid(){
 }
 
 /* ---------- Interactions & Synergies Codex Engine ---------- */
+/* ---------- Interactions & Synergies Codex Engine ---------- */
+function formatCodexSynergy(s, idx) {
+  const msg = s.msg;
+  let title = "Guideline Combination";
+  let domain = "CLINICAL PRACTICE";
+  let domainCol = "var(--mint)";
+  
+  if (msg.includes("heart-failure") || msg.includes("DAPT")) {
+    domain = "CARDIOLOGY";
+    domainCol = "#ff5470";
+    title = msg.includes("heart-failure") ? "Four Pillars of Heart Failure (HFrEF)" : "Dual Antiplatelet Therapy (DAPT)";
+  } else if (msg.includes("SMART") || msg.includes("salbutamol")) {
+    domain = "PULMONOLOGY";
+    domainCol = "#35d6e8";
+    title = msg.includes("SMART") ? "SMART Single-Inhaler Regimen" : "Controller + Reliever Pairing";
+  } else if (msg.includes("levodopa") || msg.includes("Selegiline")) {
+    domain = "NEUROLOGY";
+    domainCol = "#a78bfa";
+    title = msg.includes("Carbidopa") ? "DOPA Decarboxylase Protection" : "MAO-B Dopamine Extension";
+  } else if (msg.includes("TB") || msg.includes("DOTS") || msg.includes("HAART") || msg.includes("Ritonavir") || msg.includes("pylori")) {
+    domain = "INFECTIOUS DISEASE";
+    domainCol = "#2fd6a5";
+    title = msg.includes("DOTS") ? "DOTS Tuberculosis Multi-Drug Therapy" :
+            msg.includes("HAART") ? "HAART Triple Antiretroviral Barrier" :
+            msg.includes("Ritonavir") ? "Ritonavir Pharmacokinetic Boosting" : "H. pylori Triple Eradication";
+  } else if (msg.includes("R-CHOP")) {
+    domain = "ONCOLOGY";
+    domainCol = "#ee5fc4";
+    title = "R-CHOP Curative Lymphoma Protocol";
+  } else if (msg.includes("analgesia") || msg.includes("opioid-sparing")) {
+    domain = "PAIN MANAGEMENT";
+    domainCol = "#ffb020";
+    title = "Multimodal Opioid-Sparing Analgesia";
+  }
+
+  const partners = s.need.map(([kind, val]) => {
+    if (kind === "id") return DRUG[val] ? { type: "drug", drug: DRUG[val] } : { type: "raw", name: val };
+    const matching = DRUGS.filter(d => d.tags.includes(val));
+    return {
+      type: "tag",
+      tag: val,
+      label: TAGS[val] ? TAGS[val].split("—")[0].trim() : val,
+      matchingDrugs: matching
+    };
+  });
+
+  return {
+    type: "syn",
+    id: "syn_" + idx,
+    title,
+    domain,
+    domainCol,
+    badge: s.bonus ? `+${s.bonus}.0 PTS` : (s.boost ? `×${s.boost.mult} BOOST` : "+5.0 PTS"),
+    desc: msg,
+    partners
+  };
+}
+
+function formatCodexInteraction(ix, idx) {
+  const msg = ix.msg;
+  let title = "Drug-Drug Interaction";
+  let domain = "CONTRAINDICATION";
+  let domainCol = "var(--rose)";
+
+  if (msg.includes("CYP3A4") || msg.includes("CYP2D6") || msg.includes("induction")) {
+    domain = "CYP450 METABOLISM";
+    domainCol = "#ffb020";
+    title = msg.includes("simvastatin") ? "CYP3A4 Statin Myopathy Cascade" :
+            msg.includes("atorvastatin") ? "CYP3A4 Atorvastatin Accumulation" :
+            msg.includes("terfenadine") || msg.includes("Seldane") ? "Fatal Seldane Arrhythmia Trap" :
+            msg.includes("induction") ? "Enzyme Induction Clearance Failure" :
+            msg.includes("2D6") ? "CYP2D6 Prodrug Activation Failure" : "Strong CYP3A4 Substrate Blockade";
+  } else if (msg.includes("hypotension") || msg.includes("PDE5") || msg.includes("Nitrate")) {
+    domain = "CRITICAL CARDIOLOGY";
+    domainCol = "#ff5470";
+    title = "Nitrate + PDE5 Hemodynamic Collapse";
+  } else if (msg.includes("digoxin") || msg.includes("Digoxin") || msg.includes("amiodarone")) {
+    domain = "CARDIOLOGY";
+    domainCol = "#ff5470";
+    title = msg.includes("amiodarone") ? "Amiodarone-Digoxin Heart Block" : "Hypokalemia Digoxin Toxicity";
+  } else if (msg.includes("lithium") || msg.includes("Lithium")) {
+    domain = "NEPHROLOGY & PSYCH";
+    domainCol = "#a78bfa";
+    title = msg.includes("NSAID") ? "NSAID Lithium Clearance Inhibition" :
+            msg.includes("Thiazide") ? "Thiazide Lithium Retention" : "RAAS Lithium Excretion Block";
+  } else if (msg.includes("Warfarin") || msg.includes("warfarin") || msg.includes("DOAC") || msg.includes("bleeding")) {
+    domain = "HEMOSTASIS & HEMATOLOGY";
+    domainCol = "#ff5470";
+    title = msg.includes("TMP-SMX") ? "TMP-SMX Warfarin INR Surge" :
+            msg.includes("antiplatelet") ? "Combined Hemostasis Sabotage" :
+            msg.includes("DOAC") ? "DOAC-NSAID Mucosal Bleed Risk" : "Warfarin-NSAID Ulcer Bleeding";
+  } else if (msg.includes("methotrexate") || msg.includes("Methotrexate") || msg.includes("azathioprine") || msg.includes("Allopurinol")) {
+    domain = "ONCOLOGY & IMMUNOLOGY";
+    domainCol = "#ee5fc4";
+    title = msg.includes("azathioprine") ? "Allopurinol-Azathioprine Myelosuppression" :
+            msg.includes("TMP-SMX") ? "Double Antifolate Pancytopenia" : "NSAID Methotrexate Clearance Failure";
+  } else if (msg.includes("serotonin") || msg.includes("Serotonin")) {
+    domain = "NEUROLOGY & PSYCH";
+    domainCol = "#a78bfa";
+    title = msg.includes("MAOI") ? "MAOI-Serotonergic Autonomic Storm" :
+            msg.includes("Linezolid") ? "Linezolid MAOI Serotonin Syndrome" :
+            msg.includes("tramadol") ? "SSRI-Tramadol Serotonin & Seizure Risk" : "SSRI-Triptan Serotonin Excess";
+  } else if (msg.includes("respiratory depression") || msg.includes("benzodiazepine")) {
+    domain = "CRITICAL CARE";
+    domainCol = "#ff5470";
+    title = "Opioid + Benzo Fatal Apnea (Boxed Warning)";
+  } else if (msg.includes("triple whammy") || msg.includes("Triple whammy")) {
+    domain = "RENAL MEDICINE";
+    domainCol = "#35d6e8";
+    title = "The 'Triple Whammy' Acute Kidney Injury";
+  } else if (msg.includes("hyperkalemia") || msg.includes("spironolactone")) {
+    domain = "ELECTROLYTES & RENAL";
+    domainCol = "#ffb020";
+    title = msg.includes("TMP-SMX") ? "TMP-SMX Amiloride-Like Hyperkalemia" : "RAAS-Spironolactone Potassium Surge";
+  } else if (msg.includes("theophylline") || msg.includes("Theophylline")) {
+    domain = "PULMONOLOGY";
+    domainCol = "#35d6e8";
+    title = msg.includes("Ciprofloxacin") ? "Ciprofloxacin Theophylline Neurotoxicity" : "Clarithromycin Theophylline Overdose";
+  } else if (msg.includes("vancomycin") || msg.includes("Gentamicin")) {
+    domain = "INFECTIOUS & RENAL";
+    domainCol = "#2fd6a5";
+    title = "Aminoglycoside-Vancomycin Nephrotoxicity";
+  } else if (msg.includes("hepatotoxic") || msg.includes("Hepatotoxins")) {
+    domain = "HEPATOLOGY";
+    domainCol = "#ffb020";
+    title = "Stacked Hepatotoxicity Liver Burden";
+  } else if (msg.includes("QT") || msg.includes("torsades")) {
+    domain = "ELECTROPHYSIOLOGY";
+    domainCol = "#ff5470";
+    title = "Cumulative QTc Prolongation Arrhythmia";
+  } else if (msg.includes("anticholinergic") || msg.includes("Anticholinergic")) {
+    domain = "GERIATRICS";
+    domainCol = "#a78bfa";
+    title = "Double Anticholinergic Delirium Burden";
+  } else if (msg.includes("peptic ulcer") || msg.includes("Steroid")) {
+    domain = "GASTROENTEROLOGY";
+    domainCol = "#b8e34d";
+    title = "Steroid + NSAID Peptic Ulcer Perforation";
+  } else if (msg.includes("phenytoin") || msg.includes("Phenytoin")) {
+    domain = "NEUROLOGY";
+    domainCol = "#a78bfa";
+    title = "Valproate Phenytoin Protein Displacement";
+  }
+
+  const aPartners = ix.a.map(([kind, val]) => {
+    if (kind === "id") return DRUG[val] ? { type: "drug", drug: DRUG[val] } : { type: "raw", name: val };
+    return { type: "tag", tag: val, label: TAGS[val] ? TAGS[val].split("—")[0].trim() : val, matchingDrugs: DRUGS.filter(d => d.tags.includes(val)) };
+  });
+  const bPartners = ix.b.map(([kind, val]) => {
+    if (kind === "id") return DRUG[val] ? { type: "drug", drug: DRUG[val] } : { type: "raw", name: val };
+    return { type: "tag", tag: val, label: TAGS[val] ? TAGS[val].split("—")[0].trim() : val, matchingDrugs: DRUGS.filter(d => d.tags.includes(val)) };
+  });
+  const b2Partners = ix.b2 ? ix.b2.map(([kind, val]) => {
+    if (kind === "id") return DRUG[val] ? { type: "drug", drug: DRUG[val] } : { type: "raw", name: val };
+    return { type: "tag", tag: val, label: TAGS[val] ? TAGS[val].split("—")[0].trim() : val, matchingDrugs: DRUGS.filter(d => d.tags.includes(val)) };
+  }) : [];
+
+  return {
+    type: "ix",
+    id: "ix_" + idx,
+    title,
+    domain,
+    domainCol,
+    badge: `−${ix.dmg}.0 DMG`,
+    desc: msg,
+    trio: ix.trio,
+    aPartners,
+    bPartners,
+    b2Partners
+  };
+}
+
 function renderCodex(){
   const grid=$("#lib-grid");
   const q=Lib.q.trim().toLowerCase();
   Lib.codexTab=Lib.codexTab||"all";
 
-  // Build Synergies list
-  const synList=SYNERGIES.filter(s=>!s.skip).map((s,idx)=>{
-    const partners=s.need.map(([kind,val])=>{
-      if(kind==="id"){
-        return DRUG[val]?{type:"drug",drug:DRUG[val]}:{type:"raw",name:val};
-      }
-      const matching=DRUGS.filter(d=>d.tags.includes(val));
-      return {
-        type:"tag",
-        tag:val,
-        label:TAGS[val]?TAGS[val].split("—")[0].trim():val,
-        matchingDrugs:matching
-      };
-    });
-    return {
-      type:"syn",
-      id:"syn_"+idx,
-      badge:s.bonus?`+${s.bonus}.0 PTS`:(s.boost?`×${s.boost.mult} BOOST`:"+5.0 PTS"),
-      title:s.msg.split("—")[0].trim(),
-      desc:s.msg,
-      partners
-    };
-  });
+  const synList=SYNERGIES.filter(s=>!s.skip).map((s,idx)=>formatCodexSynergy(s,idx));
+  const ixList=INTERACTIONS.map((ix,idx)=>formatCodexInteraction(ix,idx));
 
-  // Build Interactions list
-  const ixList=INTERACTIONS.map((ix,idx)=>{
-    const aPartners=ix.a.map(([kind,val])=>{
-      if(kind==="id")return DRUG[val]?{type:"drug",drug:DRUG[val]}:{type:"raw",name:val};
-      return {type:"tag",tag:val,label:TAGS[val]?TAGS[val].split("—")[0].trim():val,matchingDrugs:DRUGS.filter(d=>d.tags.includes(val))};
-    });
-    const bPartners=ix.b.map(([kind,val])=>{
-      if(kind==="id")return DRUG[val]?{type:"drug",drug:DRUG[val]}:{type:"raw",name:val};
-      return {type:"tag",tag:val,label:TAGS[val]?TAGS[val].split("—")[0].trim():val,matchingDrugs:DRUGS.filter(d=>d.tags.includes(val))};
-    });
-    const b2Partners=ix.b2?ix.b2.map(([kind,val])=>{
-      if(kind==="id")return DRUG[val]?{type:"drug",drug:DRUG[val]}:{type:"raw",name:val};
-      return {type:"tag",tag:val,label:TAGS[val]?TAGS[val].split("—")[0].trim():val,matchingDrugs:DRUGS.filter(d=>d.tags.includes(val))};
-    }):[];
-
-    return {
-      type:"ix",
-      id:"ix_"+idx,
-      badge:`−${ix.dmg}.0 DMG`,
-      title:ix.msg.split("→")[0].split("—")[0].trim(),
-      desc:ix.msg,
-      trio:ix.trio,
-      aPartners,
-      bPartners,
-      b2Partners
-    };
-  });
-
-  // Filter lists by search query
   let filteredSyn=synList;
   let filteredIx=ixList;
   if(q){
     filteredSyn=synList.filter(s=>
+      s.title.toLowerCase().includes(q)||
+      s.domain.toLowerCase().includes(q)||
       s.desc.toLowerCase().includes(q)||
       s.partners.some(p=>(p.drug&&p.drug.n.toLowerCase().includes(q))||(p.label&&p.label.toLowerCase().includes(q))||(p.matchingDrugs&&p.matchingDrugs.some(d=>d.n.toLowerCase().includes(q))))
     );
     filteredIx=ixList.filter(ix=>
+      ix.title.toLowerCase().includes(q)||
+      ix.domain.toLowerCase().includes(q)||
       ix.desc.toLowerCase().includes(q)||
       ix.aPartners.some(p=>(p.drug&&p.drug.n.toLowerCase().includes(q))||(p.label&&p.label.toLowerCase().includes(q))||(p.matchingDrugs&&p.matchingDrugs.some(d=>d.n.toLowerCase().includes(q))))||
       ix.bPartners.some(p=>(p.drug&&p.drug.n.toLowerCase().includes(q))||(p.label&&p.label.toLowerCase().includes(q))||(p.matchingDrugs&&p.matchingDrugs.some(d=>d.n.toLowerCase().includes(q))))
@@ -235,31 +361,35 @@ function renderCodex(){
   const itemsGrid=document.createElement("div");
   itemsGrid.className="codex-grid";
 
+  // Synergies Cards
   if(Lib.codexTab==="all"||Lib.codexTab==="syn"){
     filteredSyn.forEach(s=>{
       const card=document.createElement("div");
       card.className="codex-card syn";
       
-      let chipsHTML="";
+      let formulaHTML="";
       s.partners.forEach((p,pIdx)=>{
-        if(pIdx>0)chipsHTML+=`<span class="codex-plus">+</span>`;
+        if(pIdx>0)formulaHTML+=`<span class="codex-op plus">+</span>`;
         if(p.type==="drug"){
-          const col=AREAS[p.drug.a]?.c||"var(--acc)";
-          chipsHTML+=`<button class="codex-chip" style="--ac:${col}" data-id="${p.drug.id}">${icon("i-atom")} <b>${esc(p.drug.n)}</b> <span class="dim" style="font-size:10.5px">(${esc(p.drug.cls.split("(")[0].trim())})</span></button>`;
+          const col=AREAS[p.drug.a]?.c||"var(--mint)";
+          formulaHTML+=`<button class="codex-chip" style="--ac:${col}" data-id="${p.drug.id}" title="Click to view ${esc(p.drug.n)} monograph"><span class="chip-dot"></span><b>${esc(p.drug.n)}</b></button>`;
         }else if(p.type==="tag"){
-          chipsHTML+=`<span class="codex-chip tag" title="${p.matchingDrugs.map(d=>d.n).join(", ")}">${icon("i-stack")} <b>${esc(p.label)}</b> <span class="tag-count">(${p.matchingDrugs.length} drugs)</span></span>`;
+          formulaHTML+=`<span class="codex-chip tag" title="Includes: ${p.matchingDrugs.map(d=>d.n).join(", ")}"><span class="chip-dot"></span><b>${esc(p.label)}</b> <span class="tag-count">(${p.matchingDrugs.length})</span></span>`;
         }else{
-          chipsHTML+=`<span class="codex-chip raw">${esc(p.name)}</span>`;
+          formulaHTML+=`<span class="codex-chip tag"><b>${esc(p.name)}</b></span>`;
         }
       });
 
       card.innerHTML=`
-        <div class="codex-head">
-          <span class="codex-badge syn">${icon("i-spark")} ${esc(s.badge)}</span>
-          <span class="codex-type">GUIDELINE PAIRING</span>
+        <div class="codex-top">
+          <span class="codex-domain" style="--domain-col:${s.domainCol}">${icon("i-spark")} ${esc(s.domain)}</span>
+          <span class="codex-badge syn">${icon("i-link")} ${esc(s.badge)}</span>
         </div>
-        <div class="codex-desc">${esc(s.desc)}</div>
-        <div class="codex-chips">${chipsHTML}</div>
+        <h4 class="codex-title">${esc(s.title)}</h4>
+        <p class="codex-desc">${esc(s.desc)}</p>
+        <div class="codex-formula">
+          ${formulaHTML}
+        </div>
       `;
 
       card.querySelectorAll(".codex-chip[data-id]").forEach(btn=>{
@@ -278,43 +408,45 @@ function renderCodex(){
     });
   }
 
+  // Interactions Cards
   if(Lib.codexTab==="all"||Lib.codexTab==="ix"){
     filteredIx.forEach(ix=>{
       const card=document.createElement("div");
       card.className="codex-card ix";
 
-      let aChips=ix.aPartners.map(p=>{
+      let aHTML=ix.aPartners.map(p=>{
         if(p.type==="drug"){
           const col=AREAS[p.drug.a]?.c||"var(--rose)";
-          return `<button class="codex-chip" style="--ac:${col}" data-id="${p.drug.id}">${icon("i-atom")} <b>${esc(p.drug.n)}</b></button>`;
+          return `<button class="codex-chip" style="--ac:${col}" data-id="${p.drug.id}" title="Click to view ${esc(p.drug.n)} monograph"><span class="chip-dot"></span><b>${esc(p.drug.n)}</b></button>`;
         }
-        return `<span class="codex-chip tag" title="${p.matchingDrugs.map(d=>d.n).join(", ")}">${icon("i-alert")} <b>${esc(p.label)}</b></span>`;
+        return `<span class="codex-chip tag" title="Includes: ${p.matchingDrugs.map(d=>d.n).join(", ")}"><span class="chip-dot"></span><b>${esc(p.label)}</b></span>`;
       }).join("");
 
-      let bChips=ix.bPartners.map(p=>{
+      let bHTML=ix.bPartners.map(p=>{
         if(p.type==="drug"){
           const col=AREAS[p.drug.a]?.c||"var(--rose)";
-          return `<button class="codex-chip" style="--ac:${col}" data-id="${p.drug.id}">${icon("i-atom")} <b>${esc(p.drug.n)}</b></button>`;
+          return `<button class="codex-chip" style="--ac:${col}" data-id="${p.drug.id}" title="Click to view ${esc(p.drug.n)} monograph"><span class="chip-dot"></span><b>${esc(p.drug.n)}</b></button>`;
         }
-        return `<span class="codex-chip tag" title="${p.matchingDrugs.map(d=>d.n).join(", ")}">${icon("i-alert")} <b>${esc(p.label)}</b></span>`;
+        return `<span class="codex-chip tag" title="Includes: ${p.matchingDrugs.map(d=>d.n).join(", ")}"><span class="chip-dot"></span><b>${esc(p.label)}</b></span>`;
       }).join("");
 
-      let b2Chips=ix.b2Partners.map(p=>{
+      let b2HTML=ix.b2Partners.map(p=>{
         if(p.type==="drug"){
           const col=AREAS[p.drug.a]?.c||"var(--rose)";
-          return `<button class="codex-chip" style="--ac:${col}" data-id="${p.drug.id}">${icon("i-atom")} <b>${esc(p.drug.n)}</b></button>`;
+          return `<button class="codex-chip" style="--ac:${col}" data-id="${p.drug.id}" title="Click to view ${esc(p.drug.n)} monograph"><span class="chip-dot"></span><b>${esc(p.drug.n)}</b></button>`;
         }
-        return `<span class="codex-chip tag" title="${p.matchingDrugs.map(d=>d.n).join(", ")}">${icon("i-alert")} <b>${esc(p.label)}</b></span>`;
+        return `<span class="codex-chip tag" title="Includes: ${p.matchingDrugs.map(d=>d.n).join(", ")}"><span class="chip-dot"></span><b>${esc(p.label)}</b></span>`;
       }).join("");
 
       card.innerHTML=`
-        <div class="codex-head">
+        <div class="codex-top">
+          <span class="codex-domain" style="--domain-col:${ix.domainCol}">${icon("i-alert")} ${esc(ix.domain)}</span>
           <span class="codex-badge ix">${icon("i-skull")} ${esc(ix.badge)}</span>
-          <span class="codex-type">${ix.trio?"TRIPLE TOXICITY":"BLACK-BOX DDI"}</span>
         </div>
-        <div class="codex-desc">${esc(ix.desc)}</div>
-        <div class="codex-chips">
-          ${aChips} <span class="codex-vs">⚡</span> ${bChips} ${b2Chips?`<span class="codex-vs">⚡</span> ${b2Chips}`:""}
+        <h4 class="codex-title">${esc(ix.title)}</h4>
+        <p class="codex-desc">${esc(ix.desc)}</p>
+        <div class="codex-formula">
+          ${aHTML} <span class="codex-op flash">⚡</span> ${bHTML} ${b2HTML?`<span class="codex-op flash">⚡</span> ${b2HTML}`:""}
         </div>
       `;
 
