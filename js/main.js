@@ -304,6 +304,10 @@ const DailyCase = {
     Store.set("ti_daily_done_" + dateStr, doneData);
     Achievements.unlock("daily_champ");
     selected.forEach(d=>Discovery.mark(d.id));
+    if(typeof Haptics!=="undefined"){
+      if(r.synMsgs.length>0||cured) Haptics.synergy();
+      else if(!cured) Haptics.error();
+    }
 
     this.showCompletedModal(dateStr, cs, doneData);
   },

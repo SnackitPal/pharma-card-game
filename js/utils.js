@@ -86,9 +86,11 @@ function toast(msg,type="info",ic=null){
 const Haptics={
   light(){try{if(typeof navigator!=="undefined"&&navigator.vibrate)navigator.vibrate(10);}catch(_){}},
   medium(){try{if(typeof navigator!=="undefined"&&navigator.vibrate)navigator.vibrate(25);}catch(_){}},
-  success(){try{if(typeof navigator!=="undefined"&&navigator.vibrate)navigator.vibrate([15,40,20]);}catch(_){}},
+  success(){try{if(typeof navigator!=="undefined"&&navigator.vibrate)navigator.vibrate([15,30,15]);}catch(_){}},
   error(){try{if(typeof navigator!=="undefined"&&navigator.vibrate)navigator.vibrate([40,40,40]);}catch(_){}},
-  synergy(){try{if(typeof navigator!=="undefined"&&navigator.vibrate)navigator.vibrate([20,50,30,60]);}catch(_){}},
+  synergy(){try{if(typeof navigator!=="undefined"&&navigator.vibrate)navigator.vibrate([15,30,15]);}catch(_){}},
+  gateSuccess(){try{if(typeof navigator!=="undefined"&&navigator.vibrate)navigator.vibrate([15,30,15]);}catch(_){}},
+  gateFail(){try{if(typeof navigator!=="undefined"&&navigator.vibrate)navigator.vibrate([40,40,40]);}catch(_){}},
 };
 
 /* ---- modal system ---- */
@@ -122,43 +124,63 @@ const Modal={
       }
     });
 
-    // Touch pull-down to dismiss on mobile
+    // Touch pull-down / swipe-to-dismiss on touchscreens
     const modalEl=$(".modal",back);
-    const handleEl=$(".modal-handle",back);
-    if(handleEl&&modalEl){
-      let startY=null,curY=null;
+    if(modalEl){
+      let startY=null,curY=null,isDraggingDown=false;
+      const canStartDrag = target => {
+        if(noClose) return false;
+        // Don't intercept button/input/interactive clicks or inner scrollable containers not at top
+        if(target.closest('button, a, input, select, textarea, .fchip, .choice-card, .btn')) return false;
+        const scrollable = target.closest('.det-pane, .ach-grid, .cm-pool-grid, .m-body, .modal');
+        if(scrollable && scrollable.scrollTop > 0) return false;
+        return true;
+      };
+
       const onTouchStart=e=>{
-        if(noClose)return;
+        if(!canStartDrag(e.target)) return;
         startY=e.touches[0].clientY;
         curY=startY;
+        isDraggingDown=false;
       };
       const onTouchMove=e=>{
         if(startY==null||noClose)return;
         curY=e.touches[0].clientY;
-        const dy=Math.max(0,curY-startY);
-        if(dy>0){
+        const dy=curY-startY;
+        if(dy > 6 && modalEl.scrollTop <= 0){
+          isDraggingDown = true;
           modalEl.style.transition="none";
           modalEl.style.transform=`translateY(${dy}px)`;
+          back.style.background = `rgba(4,7,14,${Math.max(0.2, 0.72 * (1 - dy / 400))})`;
         }
       };
-      const onTouchEnd=()=>{
+      const onTouchEnd=e=>{
         if(startY==null||noClose)return;
-        const dy=curY-startY;
-        if(dy>80){
-          modalEl.style.transition="transform .2s ease-out";
-          modalEl.style.transform="translateY(100%)";
-          Haptics.light();
-          setTimeout(()=>Modal.resolve(back,null),180);
-        }else{
-          modalEl.style.transition="transform .24s cubic-bezier(.2,1.2,.3,1)";
-          modalEl.style.transform="";
+        if(e.changedTouches && e.changedTouches.length){
+          curY = e.changedTouches[0].clientY;
         }
-        startY=null;curY=null;
+        if(isDraggingDown || (curY != null && (curY - startY) > 75)){
+          const dy=curY-startY;
+          if(dy>75){
+            modalEl.style.transition="transform .22s ease-out";
+            modalEl.style.transform="translateY(100%)";
+            back.style.transition="opacity .2s";
+            back.style.opacity="0";
+            Haptics.light();
+            setTimeout(()=>Modal.resolve(back,null),180);
+          }else{
+            modalEl.style.transition="transform .24s cubic-bezier(.2,1.2,.3,1)";
+            modalEl.style.transform="";
+            back.style.background="";
+          }
+        }
+        startY=null;curY=null;isDraggingDown=false;
       };
-      handleEl.addEventListener("touchstart",onTouchStart,{passive:true});
-      handleEl.addEventListener("touchmove",onTouchMove,{passive:true});
-      handleEl.addEventListener("touchend",onTouchEnd,{passive:true});
-      handleEl.addEventListener("touchcancel",onTouchEnd,{passive:true});
+
+      modalEl.addEventListener("touchstart",onTouchStart,{passive:true});
+      modalEl.addEventListener("touchmove",onTouchMove,{passive:true});
+      modalEl.addEventListener("touchend",onTouchEnd,{passive:true});
+      modalEl.addEventListener("touchcancel",onTouchEnd,{passive:true});
     }
 
     $("#modal-root").appendChild(back);
