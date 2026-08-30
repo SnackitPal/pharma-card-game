@@ -640,19 +640,43 @@ function makeCard(d,opts={}){
       if(typeof Haptics!=="undefined")Haptics.light();
     });
   }
-  attachArt(el,d);
+  attachArt(el,d,opts);
   attachTilt(el);
   return el;
 }
-function attachArt(el,d){
-  requestAnimationFrame(()=>{
-    const slot=$(".front .cf-art",el);
-    if(slot&&!slot.firstChild){
-      el.dataset.art=sigStyleOf(d);
-      slot.appendChild(cloneCanvas(artFor(d,el.dataset.art)));
-    }
+function attachArt(el,d,opts={}){
+  const slot=$(".front .cf-art",el);
+  if(!slot||slot.firstChild)return;
+  el.dataset.art=el.dataset.art||sigStyleOf(d);
+
+  // Eager render for single inspection cards or if IntersectionObserver is unavailable
+  if(opts.eager || typeof IntersectionObserver==="undefined"){
+    slot.appendChild(cloneCanvas(artFor(d,el.dataset.art)));
     animateRails(el);
-  });
+    return;
+  }
+
+  // Lazy art observer: draws canvas when card enters or nears (350px) the viewport
+  if(!window._cardArtObserver){
+    window._cardArtObserver=new IntersectionObserver((entries,obs)=>{
+      for(const entry of entries){
+        if(entry.isIntersecting){
+          const card=entry.target;
+          obs.unobserve(card);
+          const data=card._drugData;
+          const artSlot=$(".front .cf-art",card);
+          if(data&&artSlot&&!artSlot.firstChild){
+            card.dataset.art=card.dataset.art||sigStyleOf(data);
+            artSlot.appendChild(cloneCanvas(artFor(data,card.dataset.art)));
+            animateRails(card);
+          }
+        }
+      }
+    },{rootMargin:"350px 0px"});
+  }
+
+  el._drugData=d;
+  window._cardArtObserver.observe(el);
 }
 function setCardArt(el,d,style){
   el.dataset.art=style;

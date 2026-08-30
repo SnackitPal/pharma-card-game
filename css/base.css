@@ -27,7 +27,13 @@
 }
 
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{
+  scroll-behavior:smooth;
+  overflow-x:hidden;
+  width:100%;
+  max-width:100vw;
+  touch-action:manipulation;
+}
 body{
   background:var(--bg);
   color:var(--ink);
@@ -36,6 +42,11 @@ body{
   line-height:1.55;
   min-height:100vh;
   overflow-x:hidden;
+  width:100%;
+  max-width:100vw;
+  position:relative;
+  touch-action:manipulation;
+  -webkit-text-size-adjust:100%;
 }
 ::selection{background:rgba(76,201,240,.35)}
 ::-webkit-scrollbar{width:10px;height:10px}
