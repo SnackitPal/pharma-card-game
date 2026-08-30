@@ -62,6 +62,7 @@ function renderLibTools(){
     <div class="seg">
       <button id="lib-vgrid" class="${Lib.mode==="grid"?"on":""}">${icon("i-grid")} Grid</button>
       <button id="lib-vspot" class="${Lib.mode==="spot"?"on":""}">${icon("i-stack")} Spotlight</button>
+      <button id="lib-vcodex" class="${Lib.mode==="codex"?"on":""}">${icon("i-link")} Codex</button>
     </div>`;
 
   $("#lib-q").addEventListener("input",e=>{Lib.q=e.target.value;renderLibGrid();});
@@ -70,13 +71,22 @@ function renderLibTools(){
   $("#lib-era").addEventListener("change",e=>{Lib.era=e.target.value;renderLibGrid();});
   $("#lib-sort").addEventListener("change",e=>{Lib.sort=e.target.value;renderLibGrid();});
   $("#lib-vgrid").onclick=()=>{
-    if(Lib.mode==="grid")return; // already in grid, no-op
+    if(Lib.mode==="grid")return;
     Lib.mode="grid";
-    // Update active button states without rebuilding the whole tool strip
     $("#lib-vgrid").classList.add("on");
     $("#lib-vspot").classList.remove("on");
+    $("#lib-vcodex").classList.remove("on");
+    renderLibGrid();
   };
   $("#lib-vspot").onclick=()=>{Lib.mode="spot";openSpotlight(0);};
+  $("#lib-vcodex").onclick=()=>{
+    if(Lib.mode==="codex")return;
+    Lib.mode="codex";
+    $("#lib-vgrid").classList.remove("on");
+    $("#lib-vspot").classList.remove("on");
+    $("#lib-vcodex").classList.add("on");
+    renderLibGrid();
+  };
 }
 
 function libFiltered(){
@@ -103,6 +113,10 @@ function libFiltered(){
 }
 
 function renderLibGrid(){
+  if(Lib.mode==="codex"){
+    renderCodex();
+    return;
+  }
   const list=libFiltered();
   const grid=$("#lib-grid");
   const disc = typeof Discovery!=="undefined" ? Discovery.count() : 0;
@@ -120,6 +134,208 @@ function renderLibGrid(){
     frag.appendChild(card);
   }
   grid.appendChild(frag);
+}
+
+/* ---------- Interactions & Synergies Codex Engine ---------- */
+function renderCodex(){
+  const grid=$("#lib-grid");
+  const q=Lib.q.trim().toLowerCase();
+  Lib.codexTab=Lib.codexTab||"all";
+
+  // Build Synergies list
+  const synList=SYNERGIES.filter(s=>!s.skip).map((s,idx)=>{
+    const partners=s.need.map(([kind,val])=>{
+      if(kind==="id"){
+        return DRUG[val]?{type:"drug",drug:DRUG[val]}:{type:"raw",name:val};
+      }
+      const matching=DRUGS.filter(d=>d.tags.includes(val));
+      return {
+        type:"tag",
+        tag:val,
+        label:TAGS[val]?TAGS[val].split("—")[0].trim():val,
+        matchingDrugs:matching
+      };
+    });
+    return {
+      type:"syn",
+      id:"syn_"+idx,
+      badge:s.bonus?`+${s.bonus}.0 PTS`:(s.boost?`×${s.boost.mult} BOOST`:"+5.0 PTS"),
+      title:s.msg.split("—")[0].trim(),
+      desc:s.msg,
+      partners
+    };
+  });
+
+  // Build Interactions list
+  const ixList=INTERACTIONS.map((ix,idx)=>{
+    const aPartners=ix.a.map(([kind,val])=>{
+      if(kind==="id")return DRUG[val]?{type:"drug",drug:DRUG[val]}:{type:"raw",name:val};
+      return {type:"tag",tag:val,label:TAGS[val]?TAGS[val].split("—")[0].trim():val,matchingDrugs:DRUGS.filter(d=>d.tags.includes(val))};
+    });
+    const bPartners=ix.b.map(([kind,val])=>{
+      if(kind==="id")return DRUG[val]?{type:"drug",drug:DRUG[val]}:{type:"raw",name:val};
+      return {type:"tag",tag:val,label:TAGS[val]?TAGS[val].split("—")[0].trim():val,matchingDrugs:DRUGS.filter(d=>d.tags.includes(val))};
+    });
+    const b2Partners=ix.b2?ix.b2.map(([kind,val])=>{
+      if(kind==="id")return DRUG[val]?{type:"drug",drug:DRUG[val]}:{type:"raw",name:val};
+      return {type:"tag",tag:val,label:TAGS[val]?TAGS[val].split("—")[0].trim():val,matchingDrugs:DRUGS.filter(d=>d.tags.includes(val))};
+    }):[];
+
+    return {
+      type:"ix",
+      id:"ix_"+idx,
+      badge:`−${ix.dmg}.0 DMG`,
+      title:ix.msg.split("→")[0].split("—")[0].trim(),
+      desc:ix.msg,
+      trio:ix.trio,
+      aPartners,
+      bPartners,
+      b2Partners
+    };
+  });
+
+  // Filter lists by search query
+  let filteredSyn=synList;
+  let filteredIx=ixList;
+  if(q){
+    filteredSyn=synList.filter(s=>
+      s.desc.toLowerCase().includes(q)||
+      s.partners.some(p=>(p.drug&&p.drug.n.toLowerCase().includes(q))||(p.label&&p.label.toLowerCase().includes(q))||(p.matchingDrugs&&p.matchingDrugs.some(d=>d.n.toLowerCase().includes(q))))
+    );
+    filteredIx=ixList.filter(ix=>
+      ix.desc.toLowerCase().includes(q)||
+      ix.aPartners.some(p=>(p.drug&&p.drug.n.toLowerCase().includes(q))||(p.label&&p.label.toLowerCase().includes(q))||(p.matchingDrugs&&p.matchingDrugs.some(d=>d.n.toLowerCase().includes(q))))||
+      ix.bPartners.some(p=>(p.drug&&p.drug.n.toLowerCase().includes(q))||(p.label&&p.label.toLowerCase().includes(q))||(p.matchingDrugs&&p.matchingDrugs.some(d=>d.n.toLowerCase().includes(q))))
+    );
+  }
+
+  const totalVisible=(Lib.codexTab==="syn"?filteredSyn.length:Lib.codexTab==="ix"?filteredIx.length:(filteredSyn.length+filteredIx.length));
+  $("#lib-count").textContent=`${filteredSyn.length} GUIDELINE SYNERGIES · ${filteredIx.length} INTERACTION TRAPS`;
+  $("#lib-empty").hidden=totalVisible>0;
+  grid.innerHTML="";
+
+  const container=document.createElement("div");
+  container.className="codex-wrap";
+
+  const tabStrip=document.createElement("div");
+  tabStrip.className="codex-tabs";
+  tabStrip.innerHTML=`
+    <button class="codex-tab ${Lib.codexTab==="all"?"on":""}" data-tab="all">${icon("i-atom")} All Combinations (${filteredSyn.length+filteredIx.length})</button>
+    <button class="codex-tab syn ${Lib.codexTab==="syn"?"on":""}" data-tab="syn">${icon("i-link")} Guideline Synergies (${filteredSyn.length})</button>
+    <button class="codex-tab ix ${Lib.codexTab==="ix"?"on":""}" data-tab="ix">${icon("i-alert")} Dangerous DDIs (${filteredIx.length})</button>
+  `;
+  tabStrip.querySelectorAll(".codex-tab").forEach(btn=>{
+    btn.onclick=()=>{
+      Lib.codexTab=btn.dataset.tab;
+      renderCodex();
+    };
+  });
+  container.appendChild(tabStrip);
+
+  const itemsGrid=document.createElement("div");
+  itemsGrid.className="codex-grid";
+
+  if(Lib.codexTab==="all"||Lib.codexTab==="syn"){
+    filteredSyn.forEach(s=>{
+      const card=document.createElement("div");
+      card.className="codex-card syn";
+      
+      let chipsHTML="";
+      s.partners.forEach((p,pIdx)=>{
+        if(pIdx>0)chipsHTML+=`<span class="codex-plus">+</span>`;
+        if(p.type==="drug"){
+          const col=AREAS[p.drug.a]?.c||"var(--acc)";
+          chipsHTML+=`<button class="codex-chip" style="--ac:${col}" data-id="${p.drug.id}">${icon("i-atom")} <b>${esc(p.drug.n)}</b> <span class="dim" style="font-size:10.5px">(${esc(p.drug.cls.split("(")[0].trim())})</span></button>`;
+        }else if(p.type==="tag"){
+          chipsHTML+=`<span class="codex-chip tag" title="${p.matchingDrugs.map(d=>d.n).join(", ")}">${icon("i-stack")} <b>${esc(p.label)}</b> <span class="tag-count">(${p.matchingDrugs.length} drugs)</span></span>`;
+        }else{
+          chipsHTML+=`<span class="codex-chip raw">${esc(p.name)}</span>`;
+        }
+      });
+
+      card.innerHTML=`
+        <div class="codex-head">
+          <span class="codex-badge syn">${icon("i-spark")} ${esc(s.badge)}</span>
+          <span class="codex-type">GUIDELINE PAIRING</span>
+        </div>
+        <div class="codex-desc">${esc(s.desc)}</div>
+        <div class="codex-chips">${chipsHTML}</div>
+      `;
+
+      card.querySelectorAll(".codex-chip[data-id]").forEach(btn=>{
+        btn.onclick=e=>{
+          e.stopPropagation();
+          const d=DRUG[btn.dataset.id];
+          if(d){
+            SFX.click();
+            if(typeof Discovery!=="undefined")Discovery.mark(d.id);
+            openDetail(d);
+          }
+        };
+      });
+
+      itemsGrid.appendChild(card);
+    });
+  }
+
+  if(Lib.codexTab==="all"||Lib.codexTab==="ix"){
+    filteredIx.forEach(ix=>{
+      const card=document.createElement("div");
+      card.className="codex-card ix";
+
+      let aChips=ix.aPartners.map(p=>{
+        if(p.type==="drug"){
+          const col=AREAS[p.drug.a]?.c||"var(--rose)";
+          return `<button class="codex-chip" style="--ac:${col}" data-id="${p.drug.id}">${icon("i-atom")} <b>${esc(p.drug.n)}</b></button>`;
+        }
+        return `<span class="codex-chip tag" title="${p.matchingDrugs.map(d=>d.n).join(", ")}">${icon("i-alert")} <b>${esc(p.label)}</b></span>`;
+      }).join("");
+
+      let bChips=ix.bPartners.map(p=>{
+        if(p.type==="drug"){
+          const col=AREAS[p.drug.a]?.c||"var(--rose)";
+          return `<button class="codex-chip" style="--ac:${col}" data-id="${p.drug.id}">${icon("i-atom")} <b>${esc(p.drug.n)}</b></button>`;
+        }
+        return `<span class="codex-chip tag" title="${p.matchingDrugs.map(d=>d.n).join(", ")}">${icon("i-alert")} <b>${esc(p.label)}</b></span>`;
+      }).join("");
+
+      let b2Chips=ix.b2Partners.map(p=>{
+        if(p.type==="drug"){
+          const col=AREAS[p.drug.a]?.c||"var(--rose)";
+          return `<button class="codex-chip" style="--ac:${col}" data-id="${p.drug.id}">${icon("i-atom")} <b>${esc(p.drug.n)}</b></button>`;
+        }
+        return `<span class="codex-chip tag" title="${p.matchingDrugs.map(d=>d.n).join(", ")}">${icon("i-alert")} <b>${esc(p.label)}</b></span>`;
+      }).join("");
+
+      card.innerHTML=`
+        <div class="codex-head">
+          <span class="codex-badge ix">${icon("i-skull")} ${esc(ix.badge)}</span>
+          <span class="codex-type">${ix.trio?"TRIPLE TOXICITY":"BLACK-BOX DDI"}</span>
+        </div>
+        <div class="codex-desc">${esc(ix.desc)}</div>
+        <div class="codex-chips">
+          ${aChips} <span class="codex-vs">⚡</span> ${bChips} ${b2Chips?`<span class="codex-vs">⚡</span> ${b2Chips}`:""}
+        </div>
+      `;
+
+      card.querySelectorAll(".codex-chip[data-id]").forEach(btn=>{
+        btn.onclick=e=>{
+          e.stopPropagation();
+          const d=DRUG[btn.dataset.id];
+          if(d){
+            SFX.click();
+            if(typeof Discovery!=="undefined")Discovery.mark(d.id);
+            openDetail(d);
+          }
+        };
+      });
+
+      itemsGrid.appendChild(card);
+    });
+  }
+
+  container.appendChild(itemsGrid);
+  grid.appendChild(container);
 }
 
 /* ---------- spotlight swipe mode ---------- */

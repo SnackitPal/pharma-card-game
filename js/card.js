@@ -736,3 +736,76 @@ function attachTilt(el){
   @media(hover:none){.flip-btn{opacity:.92!important}}`;
   document.head.appendChild(st);
 })();
+
+/* ---------- Gyroscope 3D Holo Foil Tilt for Mobile Devices ---------- */
+const GyroTilt = {
+  enabled: false,
+  listening: false,
+  targetX: 0,
+  targetY: 0,
+  curX: 0,
+  curY: 0,
+  rafId: null,
+
+  init() {
+    if (this.listening || typeof window === "undefined" || REDUCED) return;
+    if (!window.DeviceOrientationEvent) return;
+
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      DeviceOrientationEvent.requestPermission()
+        .then(state => {
+          if (state === "granted") this.bind();
+        })
+        .catch(() => {});
+    } else {
+      this.bind();
+    }
+  },
+
+  bind() {
+    if (this.listening) return;
+    this.listening = true;
+    window.addEventListener("deviceorientation", e => {
+      if (e.gamma == null || e.beta == null) return;
+      const rawX = Math.max(-1, Math.min(1, e.gamma / 26));
+      const rawY = Math.max(-1, Math.min(1, (e.beta - 42) / 26));
+      this.targetX = rawX;
+      this.targetY = rawY;
+
+      if (!this.enabled) {
+        this.enabled = true;
+        this.loop();
+      }
+    }, { passive: true });
+  },
+
+  loop() {
+    if (!this.enabled) return;
+    this.curX += (this.targetX - this.curX) * 0.12;
+    this.curY += (this.targetY - this.curY) * 0.12;
+
+    const px = (((this.curX + 1) / 2) * 100).toFixed(1);
+    const py = (((this.curY + 1) / 2) * 100).toFixed(1);
+    const rotX = (this.curY * -12).toFixed(2);
+    const rotY = (this.curX * 14).toFixed(2);
+
+    const targets = document.querySelectorAll(".modal .card, .spot-card-layer.layer-top .card, .card.mastery-foil");
+    targets.forEach(card => {
+      if (!card.classList.contains("tilting")) {
+        const inner = card.querySelector(".cin");
+        if (inner) {
+          inner.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+        }
+        card.style.setProperty("--gx", `${px}%`);
+        card.style.setProperty("--gy", `${py}%`);
+      }
+    });
+
+    this.rafId = requestAnimationFrame(() => this.loop());
+  }
+};
+
+if (typeof window !== "undefined") {
+  window.addEventListener("touchstart", () => GyroTilt.init(), { once: true, passive: true });
+  window.addEventListener("click", () => GyroTilt.init(), { once: true, passive: true });
+}
