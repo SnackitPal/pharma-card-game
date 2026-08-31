@@ -433,6 +433,106 @@
   .pipeline-board { overflow-x: auto; }
 }
 @media (max-width: 640px) {
+  /* Campaign Responsive Polish */
+  .c-hud {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 12px;
+  }
+  .c-year {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line-soft);
+    margin: 0;
+  }
+  .c-year .y { font-size: 20px; }
+  .c-hud .stat-chip {
+    padding: 7px 10px;
+    gap: 6px;
+    min-width: 0;
+  }
+  .c-hud .stat-chip .v { font-size: 13.5px; }
+  .c-hud .stat-chip .l { font-size: 9px; }
+  .hud-spacer { display: none; }
+  .val-wrap {
+    grid-column: 1 / -1;
+    min-width: 100%;
+    max-width: 100%;
+    margin: 4px 0 0;
+  }
+  #btn-eoy {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: 42px;
+    margin-top: 4px;
+  }
+  .pipe-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+  .pipe-info .spread {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .pipe-btns {
+    flex-direction: row;
+    gap: 8px;
+    width: 100%;
+  }
+  .pipe-btns .btn {
+    flex: 1;
+    height: 38px;
+    font-size: 12px;
+  }
+  .act-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .act-btn {
+    padding: 9px 10px;
+    min-width: 0;
+    border-radius: 9px;
+  }
+  .act-btn .t {
+    font-size: 11.5px;
+    gap: 5px;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+  .act-btn .t svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+  }
+  .act-btn .c {
+    font-size: 9.5px;
+    line-height: 1.25;
+    margin-top: 2px;
+  }
+  .mkt-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+  .mkt-btns {
+    flex-direction: row;
+    gap: 8px;
+    width: 100%;
+  }
+  .mkt-btns .btn {
+    flex: 1;
+    height: 36px;
+    font-size: 12px;
+  }
+
   .hand-cards {
     display: flex;
     overflow-x: auto;
