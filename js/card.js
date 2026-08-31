@@ -559,7 +559,8 @@ function cardBackHTML(d){
 
 /* ---------- interaction/synergy lookup (for backs & planning) ---------- */
 function matchesAny(matchers,d){
-  return matchers.some(([kind,val])=>kind==="id"?d.id===val:d.tags.includes(val));
+  if(!d || !matchers || !Array.isArray(matchers)) return false;
+  return matchers.some(([kind,val])=>kind==="id" ? d.id===val : (d.tags ? d.tags.includes(val) : false));
 }
 function interactionsOf(d){
   const out=[];

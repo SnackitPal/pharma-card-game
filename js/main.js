@@ -191,7 +191,10 @@ const DailyCase = {
           <div class="daily-card-opt ${isSel?"picked":""}" data-pick="${i}">
             <div class="spread">
               <div class="opt-name"><b>${esc(d.n)}</b> <span class="dim small">${d.cls}</span></div>
-              ${risk ? `<span class="daily-risk-badge ${risk.type}" title="${esc(risk.why)}">${icon("i-alert")}</span>` : ""}
+              <div style="display:flex;gap:5px;align-items:center">
+                ${risk ? `<span class="daily-risk-badge ${risk.type}" title="${esc(risk.why)}">${icon("i-alert")}</span>` : ""}
+                <span class="info-icon-badge" data-info="${i}" title="View ${d.n} Monograph">${icon("i-help")}</span>
+              </div>
             </div>
             <div class="opt-stats mono small">EFF: ${d.eff} · SAF: ${d.saf} · ${fmtRoute(d.rt)}</div>
           </div>`;
@@ -208,7 +211,7 @@ const DailyCase = {
             <div class="spread small mono"><span>PRESCRIBED REGIMEN (${selected.length}/3)</span><span>EST. TOXICITY: ${Math.round(chartTox)}</span></div>
             <div class="daily-orders-list">${ordersHTML}</div>
           </div>
-          <div class="daily-pool-header small mono dim" style="margin-top:14px">AVAILABLE FORMULARY (CLICK TO ORDER):</div>
+          <div class="daily-pool-header small mono dim" style="margin-top:14px">AVAILABLE FORMULARY (CLICK TO ORDER · ? TO INSPECT):</div>
           <div class="daily-pool-grid">${cardsHTML}</div>
         </div>`;
     };
@@ -224,6 +227,14 @@ const DailyCase = {
 
     const bind = ()=>{
       const content = $(".m-body", modalBack);
+      $$("[data-info]", content).forEach(b=>{
+        b.onclick = (e)=>{
+          e.stopPropagation();
+          const idx = +b.dataset.info;
+          const d = hand[idx];
+          if(d) openDetail(d);
+        };
+      });
       $$("[data-pick]", content).forEach(b=>{
         b.onclick = ()=>{
           const idx = +b.dataset.pick;

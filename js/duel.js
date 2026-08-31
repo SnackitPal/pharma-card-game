@@ -27,14 +27,15 @@ function matchInfo(d,cs){
   return{mult:0.3,why:"Way off-label (still billable)"};
 }
 function toxOf(d,mods){
-  let tox=(10-d.saf)*0.85;
-  for(const m of mods){
-    tox*=m.frag;
-    if(m.hit.some(h=>d.tags.includes(h)))tox*=1.7;
+  if(!d) return 0;
+  let tox=(10-(d.saf!==undefined?d.saf:5))*0.85;
+  for(const m of (mods||[])){
+    tox*=(m.frag||1);
+    if(m.hit && m.hit.some(h=>(d.tags||[]).includes(h)))tox*=1.7;
   }
   return tox;
 }
-function hasTag(d,t){return d.tags.includes(t);}
+function hasTag(d,t){return !!(d && d.tags && d.tags.includes(t));}
 
 function applyBoosters(chart){
   const msgs=[];
@@ -509,6 +510,76 @@ function consultSenior(){
   });
 }
 
+function showTacticalCardPreview(d, idx){
+  if(M.busy) return;
+  const cs = M.cs;
+  const mods = M.mods;
+
+  let indLabel = "Standard Formulary Match (+2.0 pts)";
+  let indColor = "var(--acc)";
+  const pref = cs.pref?.find(p => (p.ids && p.ids.includes(d.id)) || (p.tags && p.tags.some(t => hasTag(d, t))));
+  const avoid = cs.avoid?.find(a => (a.ids && a.ids.includes(d.id)) || (a.tags && a.tags.some(t => hasTag(d, t))));
+
+  if (pref) {
+    indLabel = `Primary Guideline Indication (${pref.why || "+4.5 pts"})`;
+    indColor = "var(--mint)";
+  } else if (avoid) {
+    indLabel = `Contraindicated / Avoided (${avoid.why || "-4.0 pts"})`;
+    indColor = "var(--rose)";
+  }
+
+  const risk = quickRisk(d);
+  const col = (typeof AREAS !== "undefined" && AREAS[d.a]?.c) || "var(--acc)";
+
+  Modal.ask({
+    wide: true,
+    kicker: `TACTICAL FORMULARY INSPECT · ${AREAS[d.a]?.label || d.a}`,
+    title: `${d.n} (${d.b || d.cls})`,
+    html: `
+      <div class="tactical-preview-wrap">
+        <div class="tactical-card-col">
+          ${makeCard(d, {size: ""}).outerHTML}
+        </div>
+        <div class="tactical-info-col">
+          <div class="panel panel-pad" style="background:rgba(0,0,0,0.3);margin-bottom:12px">
+            <div class="spread" style="margin-bottom:6px">
+              <span class="mono small dim">CLASS & MECHANISM</span>
+              <span class="mono small" style="color:${col}">${esc(d.cls)}</span>
+            </div>
+            <div style="font-size:13.5px;color:var(--ink);line-height:1.45">${esc(d.moa)}</div>
+            <div class="spread mono small dim" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">
+              <span>TARGET: <b>${esc(d.tg || "Standard")}</b></span>
+              <span>METABOLISM: <b>${esc(d.cyp ? "CYP"+d.cyp : "Non-CYP")}</b></span>
+              <span>ROUTE: <b>${fmtRoute(d.rt)}</b></span>
+            </div>
+          </div>
+
+          <div class="tactical-impact panel panel-pad">
+            <h4 style="margin:0 0 8px 0;font-size:13px;letter-spacing:0.04em">${icon("i-chart")} Tactical Impact on Patient Chart</h4>
+            <div class="impact-item" style="color:${indColor};margin-bottom:6px">
+              ${icon(avoid ? "i-alert" : "i-check")} <b>Indication Match:</b> ${indLabel}
+            </div>
+            ${risk ? `<div class="impact-item bad" style="color:var(--rose);margin-bottom:6px">${icon("i-alert")} <b>Active DDI Warning:</b> ${esc(risk)}</div>` : ""}
+            <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">
+              ${d.tags.map(t => TAGS[t] ? `<span class="mod-chip" style="font-size:10.5px">${esc(TAGS[t])}</span>` : "").join("")}
+            </div>
+          </div>
+        </div>
+      </div>`,
+    actions: [
+      {label: "Prescribe to Chart", val: "play", primary: true, icon: "i-check"},
+      {label: "Full Monograph", val: "dossier", icon: "i-stack"},
+      {label: "Back", val: "cancel"}
+    ]
+  }).then(res => {
+    if(res === "play") {
+      playCard(idx);
+    } else if(res === "dossier") {
+      openDetail(d);
+    }
+  });
+}
+
 function renderHand(){
   const el=$("#hand-cards");if(!el)return;
   el.innerHTML="";
@@ -519,19 +590,22 @@ function renderHand(){
       card.classList.add("dimmed");
     }else{
       card.classList.add("playable");
-      card.onclick=()=>playCard(i);
+      card.onclick=()=>{
+        SFX.click();
+        showTacticalCardPreview(d, i);
+      };
     }
     const risk = quickRisk(d);
     if(risk){
       card.classList.add("has-risk");
-      card.title=`⚠ RISK: ${risk}\n${d.n} — ${d.cls}`;
+      card.title=`⚠ RISK: ${risk}\n${d.n} — ${d.cls} (Click to inspect)`;
       const pip = document.createElement("span");
       pip.className = "danger-pip";
       pip.title = `⚠ Interacts with chart: ${risk}`;
       pip.innerHTML = icon("i-alert");
       card.appendChild(pip);
     }else{
-      card.title=d.n+" — "+d.cls;
+      card.title=`${d.n} — ${d.cls} (Click to inspect & prescribe)`;
     }
     el.appendChild(card);
   });
@@ -550,10 +624,18 @@ function renderTrays(){
     const tray=$(t===0?"#tray-you":"#tray-ai");
     if(!tray)continue;
     $$(".card",tray).forEach(c=>c.remove());
+    $(".tray-empty",tray)?.remove();
     let empty=true;
     for(const e of M.chart){
       if(e.team!==t)continue;empty=false;
-      const c=makeCard(DRUG[e.d.id],{size:"xmini"});
+      const drugObj = typeof e.d === "string" ? DRUG[e.d] : (DRUG[e.d?.id] || e.d);
+      if(!drugObj) continue;
+      const c=makeCard(drugObj,{size:"xmini"});
+      c.title = `Click to inspect monograph: ${drugObj.n}`;
+      c.onclick = () => {
+        SFX.click();
+        openDetail(drugObj);
+      };
       tray.appendChild(c);
     }
     if(empty){
@@ -607,10 +689,19 @@ function playCard(handIdx){
 }
 
 function quickRisk(d){
-  for(const ix of INTERACTIONS){
+  if(!d) return null;
+  const drugObj = typeof d === "string" ? DRUG[d] : d;
+  if(!drugObj) return null;
+  for(const ix of (typeof INTERACTIONS !== "undefined" ? INTERACTIONS : [])){
     if(ix.trio)continue;
-    if(matchesAny(ix.a,d)&&M.chart.some(c=>matchesAny(ix.b,c.d)&&c.d.id!==d.id))return ix.msg;
-    if(matchesAny(ix.b,d)&&M.chart.some(c=>matchesAny(ix.a,c.d)&&c.d.id!==d.id))return ix.msg;
+    if(matchesAny(ix.a, drugObj)&&M.chart.some(c=>{
+      const cd = typeof c.d === "string" ? DRUG[c.d] : c.d;
+      return cd && matchesAny(ix.b, cd) && cd.id !== drugObj.id;
+    }))return ix.msg;
+    if(matchesAny(ix.b, drugObj)&&M.chart.some(c=>{
+      const cd = typeof c.d === "string" ? DRUG[c.d] : c.d;
+      return cd && matchesAny(ix.a, cd) && cd.id !== drugObj.id;
+    }))return ix.msg;
   }
   return null;
 }

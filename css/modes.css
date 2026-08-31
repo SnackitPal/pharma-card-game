@@ -287,8 +287,9 @@
 .chart-zone{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 @media(max-width:720px){.chart-zone{grid-template-columns:1fr}}
 .tray{
-  min-height:150px;padding:13px;border-radius:14px;border:1px dashed #2a3c66;
-  display:flex;flex-wrap:wrap;gap:9px;align-content:flex-start;position:relative;
+  min-height:160px;padding:16px 10px 10px;border-radius:14px;border:1px dashed #2a3c66;
+  display:flex;flex-direction:row;flex-wrap:nowrap;gap:8px;align-items:center;
+  justify-content:flex-start;position:relative;overflow-x:auto;scrollbar-width:thin;
 }
 .tray.you{border-color:rgba(76,201,240,.35)}
 .tray.ai{border-color:rgba(255,84,112,.3)}
@@ -296,8 +297,11 @@
   position:absolute;top:-9px;left:12px;font-family:var(--font-m);font-size:9.5px;
   letter-spacing:.2em;padding:1px 8px;background:var(--bg);border:1px solid var(--line);border-radius:99px;color:var(--dim);
 }
-.tray .card{animation:playIn .4s cubic-bezier(.2,1.4,.4,1)}
-@keyframes playIn{from{transform:scale(.4) rotate(-8deg);opacity:0}}
+.tray .card{
+  flex:0 0 auto;cursor:pointer;transition:transform .15s ease;
+  animation:playIn .4s cubic-bezier(.2,1.4,.4,1);
+}
+.tray .card:hover{transform:translateY(-4px) scale(1.03)}
 .tray-empty{color:var(--dim);font-size:12px;font-style:italic;align-self:center;margin:auto}
 
 .stability{display:flex;align-items:center;gap:11px;padding:10px 16px;margin-bottom:14px}
@@ -686,6 +690,16 @@
 .daily-risk-badge svg { width: 11px; height: 11px; }
 .daily-order-chip.has-contra { border-color: rgba(255, 84, 112, 0.4); background: rgba(255, 84, 112, 0.06); }
 .daily-order-chip.has-warn { border-color: rgba(255, 209, 102, 0.4); background: rgba(255, 209, 102, 0.06); }
+.info-icon-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08); border: 1px solid var(--line);
+  color: var(--acc); cursor: pointer; transition: all 0.15s;
+}
+.info-icon-badge:hover {
+  background: rgba(76, 201, 240, 0.25); border-color: var(--acc); color: #fff; transform: scale(1.1);
+}
+.info-icon-badge svg { width: 11px; height: 11px; }
 
 /* ============ ECG OSCILLOSCOPE MONITOR ============ */
 .ecg-monitor {
@@ -905,6 +919,32 @@
   }
   #view-arena {
     padding-bottom: 80px;
+  }
+}
+
+/* ============ TACTICAL CARD INSPECTION IN DUELS ============ */
+.tactical-preview-wrap {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.tactical-card-col {
+  display: flex;
+  justify-content: center;
+}
+.tactical-info-col {
+  display: flex;
+  flex-direction: column;
+}
+.tactical-impact {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+@media (max-width: 640px) {
+  .tactical-preview-wrap {
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 }
 
@@ -1212,12 +1252,13 @@
   align-items: center;
   gap: 6px;
   font-family: var(--font-m);
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 800;
-  padding: 6px 14px;
+  padding: 6px 12px;
   border-radius: 99px;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
+  letter-spacing: 0.05em;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .discharge-badge svg {
   width: 14px !important;
@@ -1370,10 +1411,21 @@
 @media (max-width: 600px) {
   .deb-vitals-strip {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 8px;
+  }
+  .deb-top-card {
+    padding: 12px 14px;
   }
   .deb-meta-row {
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+  }
+  .discharge-badge {
+    white-space: normal;
+    word-break: break-word;
+    font-size: 10.5px;
+    padding: 6px 10px;
+    line-height: 1.35;
+    border-radius: 10px;
   }
 }
