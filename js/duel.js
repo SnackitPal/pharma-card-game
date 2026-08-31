@@ -226,8 +226,8 @@ function enterDuel(){
 
   $("#d-root").innerHTML=`
   <div class="duel-setup">
-    <h2 class="view-title">THE FORMULARY CUP</h2>
-    <p class="view-sub">Best-of-3 clinical cases against an AI rival. Both teams prescribe into ONE shared patient chart — synergies help whoever builds them, interactions hurt everyone near them.</p>
+    <h2 class="view-title">DUEL · THE FORMULARY CUP</h2>
+    <p class="view-sub">The competitive training gym. Best-of-3 clinical cases against an AI rival on a shared patient chart using balanced archetype decks or your custom pharma franchise.</p>
     <div class="deck-row" id="deck-row"></div>
     <div class="diff-row">
       <span class="dim small mono" style="letter-spacing:.14em">OPPONENT SKILL</span>

@@ -398,6 +398,10 @@ function go(route){
     }
   }
 
+  if(route==="daily" && typeof DailyCase!=="undefined"){
+    DailyCase.open();
+    return;
+  }
   if(route==="tutorial" && typeof CaseZero!=="undefined"){
     CaseZero.start();
     return;

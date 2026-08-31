@@ -133,13 +133,13 @@ function libFiltered(){
   }
   if(Lib.quickTag && Lib.quickTag!=="ALL"){
     if(Lib.quickTag==="f80") list=list.filter(d=>d.F!=null&&d.F>=80);
-    else if(Lib.quickTag==="f_low") list=list.filter(d=>d.F==null||d.F<=20||d.rt==="IV");
+    else if(Lib.quickTag==="f_low") list=list.filter(d=>d.F==null||d.F<=30||d.rt==="IV"||d.rt==="SC"||d.rt==="INH"||d.rt==="SL");
     else if(Lib.quickTag==="hl_short") list=list.filter(d=>d.hl!=null&&d.hl<=4);
     else if(Lib.quickTag==="hl_long") list=list.filter(d=>d.hl!=null&&d.hl>=24);
-    else if(Lib.quickTag==="cyp3a4") list=list.filter(d=>(d.cyp&&d.cyp.includes("3A4"))||d.tags.includes("cyp3a4_sub")||d.tags.includes("cyp3a4_inh"));
+    else if(Lib.quickTag==="cyp3a4") list=list.filter(d=>(d.cyp&&d.cyp.includes("3A4"))||d.tags.includes("cyp3a4_sub")||d.tags.includes("cyp3a4_inh")||d.tags.includes("cyp3a4inh")||d.tags.includes("statin3a4"));
     else if(Lib.quickTag==="cyp2d6") list=list.filter(d=>(d.cyp&&d.cyp.includes("2D6"))||d.tags.includes("cyp2d6_sub")||d.tags.includes("cyp2d6_inh"));
-    else if(Lib.quickTag==="qt") list=list.filter(d=>d.tags.includes("qt_risk")||d.tags.includes("arrhythmia"));
-    else if(Lib.quickTag==="bio") list=list.filter(d=>d.cls.toLowerCase().includes("antibody")||d.cls.toLowerCase().includes("biologic")||d.cls.toLowerCase().includes("recombinant")||d.tags.includes("mab"));
+    else if(Lib.quickTag==="qt") list=list.filter(d=>d.tags.includes("qt")||d.tags.includes("qt_risk")||d.tags.includes("arrhythmia")||d.moa.toLowerCase().includes("qt")||d.id==="amio"||d.id==="halo"||d.id==="dig");
+    else if(Lib.quickTag==="bio") list=list.filter(d=>d.cls.toLowerCase().includes("antibody")||d.cls.toLowerCase().includes("biologic")||d.cls.toLowerCase().includes("recombinant")||d.cls.toLowerCase().includes("mab")||d.n.toLowerCase().endsWith("mab")||d.tags.includes("mab")||d.tags.includes("biologic"));
     else if(Lib.quickTag==="foil") list=list.filter(d=>typeof FoilMastery!=="undefined"&&FoilMastery.has(d.id));
   }
   const cmp={

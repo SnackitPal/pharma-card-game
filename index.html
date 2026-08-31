@@ -18,9 +18,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;800&family=Lora:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/base.css?v=8">
-<link rel="stylesheet" href="css/card.css?v=8">
-<link rel="stylesheet" href="css/modes.css?v=8">
+<link rel="stylesheet" href="css/base.css?v=9">
+<link rel="stylesheet" href="css/card.css?v=9">
+<link rel="stylesheet" href="css/modes.css?v=9">
 </head>
 <body>
 
@@ -90,11 +90,11 @@
   </a>
   <nav id="mainnav">
     <a href="#/home" data-route="home">Home</a>
-    <a href="#/campaign" data-route="campaign">Campaign</a>
-    <a href="#/library" data-route="library">Compendium</a>
-    <a href="#/arena" data-route="arena">Arena</a>
-    <a href="#" data-route="daily" class="nav-daily" title="Daily Clinical Case Challenge">Daily Case</a>
-    <a href="#" data-route="tutorial" class="nav-tut" title="Case Zero: Interactive Guided Tutorial">Case Zero</a>
+    <a href="#" data-route="daily" class="nav-daily" title="Daily Clinical Case Challenge">Treat (Daily Case)</a>
+    <a href="#/arena" data-route="arena">Duel (Arena)</a>
+    <a href="#/campaign" data-route="campaign">Develop (Campaign)</a>
+    <a href="#/library" data-route="library">Learn (Compendium)</a>
+    <a href="#" data-route="tutorial" class="nav-tut" title="Case Zero: Interactive Guided Tutorial">Case Zero (Tutorial)</a>
     <a href="#" data-route="casemaker" class="nav-maker" title="Custom Clinical Case Architect">Case Maker</a>
   </nav>
   <div class="nav-tools">
@@ -116,10 +116,10 @@
         <p class="hero-sub">Learn drugs by using them. Prescribe targeted regimens across real patient charts, navigate synergistic polypharmacy & toxic drug interaction traps, push molecules through clinical trials, and duel AI rivals.</p>
         <div class="hero-ctas">
           <button class="btn btn-mint btn-lg hero-main-cta" data-route="tutorial"><svg><use href="#i-check"/></svg>Start with Case Zero (3 Mins)</button>
-          <button class="btn btn-gold btn-lg" data-route="daily"><svg><use href="#i-spark"/></svg>Play Daily Case</button>
-          <button class="btn btn-primary btn-lg" data-route="campaign"><svg><use href="#i-flask"/></svg>Found Pharma Company</button>
-          <button class="btn btn-lg" data-route="arena"><svg><use href="#i-trophy"/></svg>The Formulary Cup</button>
-          <button class="btn btn-lg" data-route="library"><svg><use href="#i-stack"/></svg>Drug Compendium</button>
+          <button class="btn btn-gold btn-lg" data-route="daily"><svg><use href="#i-spark"/></svg>Treat Patient (Daily Case)</button>
+          <button class="btn btn-primary btn-lg" data-route="arena"><svg><use href="#i-trophy"/></svg>Duel AI Rivals (The Arena)</button>
+          <button class="btn btn-lg" data-route="campaign"><svg><use href="#i-flask"/></svg>Develop Pharma (Campaign)</button>
+          <button class="btn btn-lg" data-route="library"><svg><use href="#i-stack"/></svg>Learn 132 Molecules (Compendium)</button>
         </div>
         <div class="hero-stats mono" id="hero-stats"></div>
       </div>
@@ -212,8 +212,8 @@
   <section class="view" id="view-library">
     <div class="lib-head">
       <div>
-        <h2 class="view-title">THE COMPENDIUM</h2>
-        <p class="view-sub">Every card is a real medicine. Stats are derived from real pharmacology — half-life, bioavailability, market gravity, manufacturing complexity.</p>
+        <h2 class="view-title">LEARN · THE MOLECULE COMPENDIUM</h2>
+        <p class="view-sub">Interactive knowledge vault of 132 real medicines. Verified pharmacology stats (PK, bioavailability, half-lives, CYP450 pathways) and simulation ratings.</p>
       </div>
       <div class="lib-count mono" id="lib-count"></div>
     </div>
@@ -235,17 +235,17 @@
 <div id="modal-root"></div>
 <div id="toast-root" aria-live="polite"></div>
 
-<script src="js/utils.js?v=8"></script>
-<script src="js/data.js?v=8"></script>
-<script src="js/audio.js?v=8"></script>
-<script src="js/ecg.js?v=8"></script>
-<script src="js/bg.js?v=8"></script>
-<script src="js/card.js?v=8"></script>
-<script src="js/library.js?v=8"></script>
-<script src="js/campaign.js?v=8"></script>
-<script src="js/duel.js?v=8"></script>
-<script src="js/tutorial.js?v=8"></script>
-<script src="js/casemaker.js?v=8"></script>
-<script src="js/main.js?v=8"></script>
+<script src="js/utils.js?v=9"></script>
+<script src="js/data.js?v=9"></script>
+<script src="js/audio.js?v=9"></script>
+<script src="js/ecg.js?v=9"></script>
+<script src="js/bg.js?v=9"></script>
+<script src="js/card.js?v=9"></script>
+<script src="js/library.js?v=9"></script>
+<script src="js/campaign.js?v=9"></script>
+<script src="js/duel.js?v=9"></script>
+<script src="js/tutorial.js?v=9"></script>
+<script src="js/casemaker.js?v=9"></script>
+<script src="js/main.js?v=9"></script>
 </body>
 </html>

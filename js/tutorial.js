@@ -58,10 +58,10 @@ const CaseZero = {
       <div class="tutorial-shell">
         <div class="tut-header spread">
           <div>
-            <div class="m-kicker" style="color:var(--mint)">INTERACTIVE CLINICAL TUTORIAL</div>
+            <div class="m-kicker" style="color:var(--mint)">GUIDED CLINICAL SIMULATION</div>
             <h3 style="margin:2px 0 0 0">CASE ZERO: The First Prescription</h3>
           </div>
-          <div class="step-badge mono">STEP ${Math.min(3, this.step)} / 3</div>
+          <div class="step-badge mono">STEP ${Math.min(5, this.step)} / 5</div>
         </div>
 
         <div class="tut-coachmark panel panel-pad" id="tut-coachmark">
@@ -71,7 +71,7 @@ const CaseZero = {
         <div class="case-panel panel" style="--ca:${cs.ca};margin-top:12px">
           <div class="spread">
             <div>
-              <div class="m-kicker" style="color:${cs.ca}">EMERGENCY DEPARTMENT · ROOM 4</div>
+              <div class="m-kicker" style="color:${cs.ca}">EMERGENCY DEPARTMENT · RESUSCITATION BAY 1</div>
               <div class="case-ind">${esc(cs.ind)}</div>
             </div>
             <div class="case-sev" title="Severity">${icon("i-skull").repeat(cs.sev)}</div>
@@ -91,7 +91,7 @@ const CaseZero = {
         <div class="hand-dock panel">
           <div class="spread" style="margin-bottom:6px">
             <h4 style="margin:0">${icon("i-stack")} Your Formulary Hand</h4>
-            <span class="small dim mono">CLICK THE RECOMMENDED MEDICATION</span>
+            <span class="small dim mono" id="tut-hand-hint">CLICK TO INTERACT WITH MEDICATION</span>
           </div>
           <div class="hand-cards" id="tut-hand-cards"></div>
         </div>
@@ -121,8 +121,8 @@ const CaseZero = {
         <div class="coach-inner">
           <div class="coach-icon" style="color:var(--mint)">${icon("i-spark")}</div>
           <div>
-            <div class="coach-title">Step 1: Guideline Indication Matching</div>
-            <p>Your 62-year-old patient has arrived in the Emergency Department with crushing substernal chest pain and acute ST elevation. First-line clinical guidelines demand immediate antiplatelet therapy. Click <b>Aspirin</b> in your hand below to administer it to the chart.</p>
+            <div class="coach-title">Step 1: Patient Presentation & Card Anatomy</div>
+            <p>Your 62-year-old patient presents with acute ST-elevation MI. Notice the card stats: <b>Efficacy</b> reflects clinical potency, <b>Safety</b> reflects tolerability, and <b>Mechanism (MoA)</b> dictates biological synergy. Guidelines demand immediate platelet inhibition. Click <b>Aspirin</b> in your hand below.</p>
           </div>
         </div>`;
     }
@@ -132,28 +132,38 @@ const CaseZero = {
           <div class="coach-icon" style="color:var(--gold)">${icon("i-link")}</div>
           <div>
             <div class="coach-title">Step 2: Shared Patient Chart & Polypharmacy</div>
-            <p>Rival Resident Dr. Adams just administered <b>Propranolol</b> (Beta-Blocker) into the shared chart. Notice how both teams' orders affect the same patient. Propranolol reduces heart rate and oxygen demand without triggering any dangerous drug interactions!</p>
-            <button class="btn btn-sm btn-primary" id="btn-tut-step2-next" style="margin-top:8px">${icon("i-play")} Proceed to Step 3 →</button>
+            <p>Resident Dr. Adams just administered <b>Propranolol</b> (Beta-Blocker) into the shared patient chart. In Therapeutic Index, both teams treat the <i>same</i> patient. Propranolol decreases myocardial oxygen demand without triggering any dangerous drug interaction!</p>
+            <button class="btn btn-sm btn-primary" id="btn-tut-step2-next" style="margin-top:8px">${icon("i-play")} Step 3: Inspect Dangerous DDI Traps →</button>
           </div>
         </div>`;
     }
     if (this.step === 3) {
       return `
         <div class="coach-inner">
+          <div class="coach-icon" style="color:var(--rose)">${icon("i-alert")}</div>
+          <div>
+            <div class="coach-title">Step 3: The Dangerous Interaction Trap (Why NOT Ibuprofen?)</div>
+            <p><b>⚠️ Clinical Warning:</b> Try clicking <b>Ibuprofen (NSAID)</b> or <b>Warfarin</b> below to inspect why they are dangerous. <b>NSAIDs are black-box contraindicated post-MI</b> (blunting aspirin's antiplatelet action & causing fluid retention). When ready, click <b>Clopidogrel</b> to build the guideline synergy.</p>
+          </div>
+        </div>`;
+    }
+    if (this.step === 4) {
+      return `
+        <div class="coach-inner">
           <div class="coach-icon" style="color:var(--cyan)">${icon("i-shield")}</div>
           <div>
-            <div class="coach-title">Step 3: Synergy vs Dangerous Interactions</div>
-            <p><b>Warfarin</b> is an anticoagulant; giving it alongside Aspirin causes severe bleeding on compromised mucosa. Instead, <b>Clopidogrel</b> forms evidence-based <b>Dual Antiplatelet Therapy (DAPT)</b>! Administer <b>Clopidogrel</b> to complete the regimen.</p>
+            <div class="coach-title">Step 4: Dual Antiplatelet Synergy (DAPT)</div>
+            <p>By prescribing <b>Aspirin (COX inhibitor)</b> $+$ <b>Clopidogrel (P2Y12 inhibitor)</b>, you activated <b>Dual Antiplatelet Therapy (DAPT)</b>! Synergistic polypharmacy awards a <b>+3.0 PTS Guideline Bonus</b> and prevents recurrent stent thrombosis.</p>
+            <button class="btn btn-sm btn-gold" id="btn-tut-resolve" style="margin-top:8px">${icon("i-trophy")} Step 5: Resolve Case & Certify →</button>
           </div>
         </div>`;
     }
     return `
       <div class="coach-inner">
-        <div class="coach-icon" style="color:var(--gold)">${icon("i-check")}</div>
+        <div class="coach-icon" style="color:var(--mint)">${icon("i-check")}</div>
         <div>
-          <div class="coach-title">Step 4: Case Victory & Resolution</div>
-          <p>Fantastic work! You created a synergistic DAPT cardiac regimen with 0 toxic adverse interactions. Click <b>Resolve Case</b> to finalize the chart and graduate!</p>
-          <button class="btn btn-sm btn-gold" id="btn-tut-resolve" style="margin-top:8px">${icon("i-trophy")} Resolve Case & Graduate →</button>
+          <div class="coach-title">Step 5: Case Concluded — Full Stabilization</div>
+          <p>The patient's live ECG telemetry has returned to normal sinus rhythm with 0 adverse toxicity overload. Click <b>Finalize Certification</b> below to graduate.</p>
         </div>
       </div>`;
   },
@@ -217,17 +227,35 @@ const CaseZero = {
     this.hand.forEach(id => {
       const d = DRUG[id];
       const card = makeCard(d, {size: "mini"});
-      const isTarget = (this.step === 1 && id === "asp") || (this.step === 3 && id === "clopi");
-
-      if (isTarget) {
+      
+      if (this.step === 1 && id === "asp") {
         card.classList.add("playable", "pulse-card");
-        card.onclick = () => this.handlePlayCard(id);
+        card.onclick = () => this.handlePlayCard("asp");
+      } else if (this.step === 3) {
+        if (id === "clopi") {
+          card.classList.add("playable", "pulse-card");
+          card.onclick = () => this.handlePlayCard("clopi");
+        } else if (id === "ibu") {
+          card.classList.add("has-risk");
+          card.title = "⚠ Click to inspect NSAID contraindication";
+          card.onclick = () => {
+            SFX.bad();
+            toast("⚠️ Contraindication Trap: NSAIDs (Ibuprofen) are black-box contraindicated post-MI! Causes bleeding with antiplatelets & fluid retention.", "bad", "i-alert");
+          };
+        } else if (id === "warf") {
+          card.classList.add("has-risk");
+          card.title = "⚠ Click to inspect bleeding hazard";
+          card.onclick = () => {
+            SFX.bad();
+            toast("⚠️ Bleeding Hazard: Warfarin takes 3-5 days to work and creates severe mucosal bleeding when combined with acute antiplatelets.", "warn", "i-alert");
+          };
+        } else {
+          card.classList.add("dimmed");
+        }
       } else {
         card.classList.add("dimmed");
-        if (id === "warf") card.title = "⚠ Warfarin + Aspirin = Severe Bleeding Risk!";
-        else if (id === "ibu") card.title = "⚠ NSAIDs contraindicated post-MI!";
-        else card.title = `${d.n} — Not indicated right now`;
       }
+
       el.appendChild(card);
     });
 
@@ -285,7 +313,7 @@ const CaseZero = {
         <div class="end-hero" style="margin: 0 auto">
           <div class="cup-icon" style="color:var(--mint)">${icon("i-trophy")}</div>
           <div class="end-rank">CLINICAL TUTORIAL PASSED</div>
-          <p class="mut">Final Regimen Score: <b>+15.2 pts</b> · Adverse Rx: 0 · DAPT Synergy: Active</p>
+          <p class="mut">Final Regimen Score: <b>+15.2 pts</b> · Adverse DDI: 0 · DAPT Synergy: Active</p>
           <div class="end-stats" style="margin: 16px 0">
             <div><b>3</b>ORDERS</div>
             <div><b>+3.0</b>DAPT SYNERGY</div>
@@ -302,7 +330,7 @@ const CaseZero = {
         {label: "Return Home", val: "home"},
       ],
     }).then(res => {
-      if (res === "daily" && typeof go === "function") go("daily");
+      if (res === "daily" && typeof DailyCase !== "undefined") DailyCase.open();
       else if (res === "arena" && typeof go === "function") go("arena");
       else if (typeof go === "function") go("home");
     });
