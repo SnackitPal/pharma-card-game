@@ -277,13 +277,13 @@ const CaseZero = {
       Achievements.unlock("case_zero");
     }
 
-    Modal.open({
+    Modal.ask({
       wide: true,
       kicker: "CASE ZERO CONCLUDED",
       title: "Honorary Resident — Certification Granted!",
       html: `
         <div class="end-hero" style="margin: 0 auto">
-          <div class="cup-icon" style="color:var(--teal)">${icon("i-trophy")}</div>
+          <div class="cup-icon" style="color:var(--mint)">${icon("i-trophy")}</div>
           <div class="end-rank">CLINICAL TUTORIAL PASSED</div>
           <p class="mut">Final Regimen Score: <b>+15.2 pts</b> · Adverse Rx: 0 · DAPT Synergy: Active</p>
           <div class="end-stats" style="margin: 16px 0">
@@ -292,16 +292,18 @@ const CaseZero = {
             <div><b>0</b>TOXICITY OVERLOAD</div>
             <div><b>PASSED</b>EVALUATION</div>
           </div>
-          <p style="text-align:left;font-size:14px;color:var(--tx-dim);line-height:1.6">
-            You have mastered the foundational tenets of <b>Therapeutic Index</b>: matching first-line guidelines, monitoring shared patient stability via live ECG, and leveraging synergistic polypharmacy while evading catastrophic black-box interactions.
+          <p style="text-align:left;font-size:13.5px;color:var(--mut);line-height:1.6">
+            You have mastered the core loops of <b>Therapeutic Index</b>: matching guideline indications, monitoring shared patient telemetry, and leveraging synergistic polypharmacy while evading adverse drug interactions.
           </p>
         </div>`,
       actions: [
-        {label: "Enter Arena (Formulary Cup)", val: "arena", primary: true, icon: "i-trophy"},
+        {label: "Play Daily Case", val: "daily", primary: true, icon: "i-spark"},
+        {label: "Enter Formulary Cup", val: "arena", icon: "i-trophy"},
         {label: "Return Home", val: "home"},
       ],
-    }).then?.(res => {
-      if (res === "arena" && typeof go === "function") go("arena");
+    }).then(res => {
+      if (res === "daily" && typeof go === "function") go("daily");
+      else if (res === "arena" && typeof go === "function") go("arena");
       else if (typeof go === "function") go("home");
     });
 

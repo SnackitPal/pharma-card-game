@@ -252,13 +252,33 @@ function enterDuel(){
   const streak=Store.get("streak",0);
   $("#streak-note").textContent=streak>0?`CURRENT STREAK: ${streak}`:"";
 
+  const camp = Store.get("campaign");
+  const compCards = [...new Set([...(camp?.mkt||[]).map(m=>m.id), ...(camp?.pipe||[]).map(p=>p.id)])].filter(id=>DRUG[id]);
+  const allArchetypes = [...ARCHETYPES];
+  if(compCards.length > 0){
+    const STAPLES = ["asp", "epi", "salbu", "amox", "furos", "lisin", "acetam", "diph"];
+    const merged = [...compCards];
+    for(const s of STAPLES){
+      if(!merged.includes(s) && merged.length < 12) merged.push(s);
+    }
+    allArchetypes.unshift({
+      id: "company_deck",
+      name: `Pharma Franchise (Yr ${camp.year||1})`,
+      icon: "i-flask",
+      c: "#ffd166",
+      desc: `Your company's pipeline (${compCards.slice(0,3).map(id=>DRUG[id].n).join(", ")}) + hospital emergency staples.`,
+      cards: merged,
+      isCompany: true
+    });
+  }
+
   const row=$("#deck-row");
-  ARCHETYPES.forEach(a=>{
+  allArchetypes.forEach(a=>{
     const b=document.createElement("button");
-    b.className="deck-card";
+    b.className=`deck-card ${a.isCompany?"company-deck-highlight":""}`;
     b.style.setProperty("--dc",a.c);
     const sample=(a.random?"random pool":a.cards.slice(0,4).map(id=>DRUG[id].n).join(", ")+"…");
-    b.innerHTML=`<div class="dn">${icon(a.icon)}${a.name}</div><div class="dd">${a.desc}</div>
+    b.innerHTML=`<div class="dn">${icon(a.icon)}${a.name} ${a.isCompany?`<span class="mono tag-mini" style="color:var(--gold);border-color:rgba(255,209,102,0.4)">CUSTOM</span>`:""}</div><div class="dd">${a.desc}</div>
       <div class="dk">${(a.random?["?"]:a.cards.slice(0,5)).map(()=>"<span class='cb-tag'>card</span>").join("")}</div>
       <div class="small dim mono" style="margin-top:8px">${esc(sample)}</div>`;
     b.onclick=()=>{SFX.click();$$(".deck-card",row).forEach(x=>x.classList.remove("on"));b.classList.add("on");selDeck=a.id;$("#btn-start-duel").disabled=false;};
@@ -283,7 +303,21 @@ function enterDuel(){
 
 /* ---------------- match flow ---------------- */
 function startMatch(deckId,diff){
-  const arch=ARCHETYPES.find(a=>a.id===deckId);
+  let arch=ARCHETYPES.find(a=>a.id===deckId);
+  if(deckId === "company_deck"){
+    const camp = Store.get("campaign");
+    const compCards = [...new Set([...(camp?.mkt||[]).map(m=>m.id), ...(camp?.pipe||[]).map(p=>p.id)])].filter(id=>DRUG[id]);
+    const STAPLES = ["asp", "epi", "salbu", "amox", "furos", "lisin", "acetam", "diph"];
+    const merged = [...compCards];
+    for(const s of STAPLES){
+      if(!merged.includes(s) && merged.length < 12) merged.push(s);
+    }
+    arch = {
+      id: "company_deck",
+      name: `Pharma Franchise (Yr ${camp?.year||1})`,
+      cards: merged
+    };
+  }
   const mkDeck=a=>a.random
     ?shuffle(DRUGS.filter(d=>d.r!=="BANNED")).slice(0,12).map(d=>d.id)
     :shuffle(a.cards);
@@ -743,6 +777,43 @@ async function resolveCase(early){
     pearl: M.cs.pearl || (winner===0?"Target organ perfusion stabilized under guideline regimen.":"Review adverse drug interaction pathways before multi-agent ordering.")
   };
   M.caseSummaries.push(curSummary);
+
+  if (M.isPivotalTrial) {
+    const won = winner === 0;
+    const camp = Store.get("campaign");
+    if (camp) {
+      const p = camp.pipe.find(x => x.id === M.pivotalDrugId);
+      if (won) {
+        if (p) p.stage = 4; // Filed / FDA ready
+        camp.cash = (camp.cash || 0) + 35;
+        camp.rep = Math.min(100, (camp.rep || 50) + 6);
+        toast(`Pivotal Trial Won! ${DRUG[M.pivotalDrugId]?.n} FDA Filing Secured (+$35M)`, "gold", "i-trophy");
+      } else {
+        camp.data = (camp.data || 0) + 15;
+        toast(`Trial missed primary endpoint (+15 Data harvested)`, "info", "i-dna");
+      }
+      Store.set("campaign", camp);
+    }
+    
+    const openPivotalDebrief = () => {
+      showClinicalDebriefModal({
+        ...curSummary,
+        actionLabel: won ? "Return to Pharma Empire (Filing Secured) →" : "Return to Pharma Empire →",
+        onClose: () => {
+          location.hash = "#/campaign";
+        }
+      });
+    };
+    
+    const pBtn = document.createElement("button");
+    pBtn.className = "btn btn-primary";
+    pBtn.innerHTML = icon("i-flask") + (won ? "Return to Campaign (Approved)" : "Return to Campaign");
+    pBtn.onclick = () => { location.hash = "#/campaign"; };
+    acts.appendChild(pBtn);
+
+    setTimeout(openPivotalDebrief, 650);
+    return;
+  }
 
   const openDebrief = () => {
     showClinicalDebriefModal({

@@ -851,37 +851,39 @@ function openDetail(d){
 
   const tabs={
     pharm:`
+      <div class="dossier-mode-badge factual">${icon("i-check")} VERIFIED PHARMACOLOGICAL FACTS (SCIENCE)</div>
       <div class="kv">
         <span class="k">Class</span><span><b>${esc(d.cls)}</b></span>
-        <span class="k">Mechanism</span><span>${esc(d.moa)}</span>
-        <span class="k">Target(s)</span><span>${esc(d.tg)}</span>
-        <span class="k">Route</span><span>${fmtRoute(d.rt)} (${d.rt})</span>
-        <span class="k">Bioavailability</span><span>${d.F==null?"n/a — non-oral":d.F+"%"}</span>
-        <span class="k">Half-life</span><span>${fmtHL(d.hl)}</span>
-        <span class="k">Metabolism</span><span>${d.cyp?"CYP"+esc(d.cyp)+" plays a major role":"Not CYP-dominated"}</span>
-        <span class="k">Approved</span><span>${d.y}</span>
+        <span class="k">Mechanism (MoA)</span><span>${esc(d.moa)}</span>
+        <span class="k">Biological Target(s)</span><span>${esc(d.tg)}</span>
+        <span class="k">Primary Route</span><span>${fmtRoute(d.rt)} (${d.rt})</span>
+        <span class="k">Bioavailability (F)</span><span>${d.F==null?"n/a (Non-oral)":d.F+"%"}</span>
+        <span class="k">Elimination Half-life</span><span>${fmtHL(d.hl)}</span>
+        <span class="k">Metabolism (CYP450)</span><span>${d.cyp?"Major CYP"+esc(d.cyp)+" substrate/pathway":"Non-CYP dominated clearance"}</span>
+        <span class="k">FDA Approved</span><span>Year ${d.y}</span>
       </div>`,
     play:`
-      <div class="row" style="flex-wrap:wrap;gap:8px">
+      <div class="dossier-mode-badge simulation">${icon("i-zap")} MATHEMATICAL SIMULATION MODEL (GAME MECHANICS)</div>
+      <div class="row" style="flex-wrap:wrap;gap:8px;margin-bottom:10px">
         <span class="role-badge" style="--ac:${A.c}">${icon("i-spark")}${roleOf(d)}</span>
         ${isFoil?`<span class="badge-foil">${icon("i-star")} HOLO FOIL MASTERED</span>`:""}
       </div>
       <div class="kv">
-        <span class="k">Efficacy</span><span><b>${d.eff}/10</b> — potency & clinical effect size</span>
-        <span class="k">Safety</span><span><b>${d.saf}/10</b> — tolerability & therapeutic index</span>
-        <span class="k">Market gravity</span><span>$${d.mkt}B ≈ peak annual sales</span>
-        <span class="k">Complexity</span><span>${d.syn}/10 — manufacturing difficulty</span>
-        <span class="k">PK character</span><span>t½ ${fmtHL(d.hl)}${d.hl>=100?" — effects persist across rounds":""}</span>
+        <span class="k">Efficacy Rating</span><span><b>${d.eff}/10</b> — potency & clinical endpoint effect</span>
+        <span class="k">Safety Rating</span><span><b>${d.saf}/10</b> — therapeutic window & adverse margin</span>
+        <span class="k">Market Gravity</span><span>$${d.mkt}B peak franchise annual sales</span>
+        <span class="k">Complexity</span><span>${d.syn}/10 synthesis & manufacturing difficulty</span>
       </div>
-      ${ix.length?`<div><b>Known interactions:</b><div class="ix-list">${ix.map(x=>`<div class="ix-it">${icon("i-alert")}<span>${esc(x.full)}</span></div>`).join("")}</div></div>`:""}
-      ${syn.length?`<div><b>Synergy partners:</b><div class="ix-list">${syn.map(x=>`<div class="ix-it syn">${icon("i-link")}<span>${esc(x)}</span></div>`).join("")}</div></div>`:""}
-      ${tagList?`<div><b>Clinical flags:</b><div class="cb-tags" style="margin-top:6px">${tagList}</div></div>`:""}`,
+      ${ix.length?`<div style="margin-top:12px"><b>Active Interaction Traps:</b><div class="ix-list">${ix.map(x=>`<div class="ix-it">${icon("i-alert")}<span>${esc(x.full)}</span></div>`).join("")}</div></div>`:""}
+      ${syn.length?`<div style="margin-top:12px"><b>Guideline Synergy Multipliers:</b><div class="ix-list">${syn.map(x=>`<div class="ix-it syn">${icon("i-link")}<span>${esc(x)}</span></div>`).join("")}</div></div>`:""}
+      ${tagList?`<div style="margin-top:12px"><b>Clinical Flags:</b><div class="cb-tags" style="margin-top:6px">${tagList}</div></div>`:""}`,
     lore:`
+      <div class="dossier-mode-badge narrative">${icon("i-atom")} CLINICAL CONTEXT & HISTORY</div>
       <div class="det-quote">${esc(d.lore)}</div>
       <div class="kv" style="margin-top:12px">
-        <span class="k">Indications</span><span>${d.inds.map(esc).join(" · ")}</span>
-        ${d.alt&&d.alt.length?`<span class="k">Repurpose paths</span><span>${d.alt.map(esc).join(" · ")}</span>`:""}
-        <span class="k">Rarity</span><span>${RARITY[d.r]?RARITY[d.r].label:d.r}${d.r==="LEGEND"?" — transformative, history-making":d.r==="BANNED"?" — removed from the playable pool":""}</span>
+        <span class="k">Labeled Indications</span><span>${d.inds.map(esc).join(" · ")}</span>
+        ${d.alt&&d.alt.length?`<span class="k">Repurposing Trajectories</span><span>${d.alt.map(esc).join(" · ")}</span>`:""}
+        <span class="k">Historical Tier</span><span>${RARITY[d.r]?RARITY[d.r].label:d.r}${d.r==="LEGEND"?" — transformative, history-making molecule":d.r==="BANNED"?" — withdrawn/banned from standard care":""}</span>
       </div>`,
   };
 
@@ -899,9 +901,9 @@ function openDetail(d){
         <h3>${esc(d.n)} ${isFoil?`<span class="foil-star" title="Holo Foil Mastered">⭐</span>`:""}</h3>
         <div class="brand">${esc(d.b)} · ${esc(d.cls)}</div>
         <div class="det-tabs" style="--dt:${A.c}">
-          <button class="det-tab on" data-tab="pharm">Pharmacology</button>
-          <button class="det-tab" data-tab="play">Gameplay</button>
-          <button class="det-tab" data-tab="lore">Story</button>
+          <button class="det-tab on" data-tab="pharm">Clinical Facts</button>
+          <button class="det-tab" data-tab="play">Simulation Model</button>
+          <button class="det-tab" data-tab="lore">Context & History</button>
         </div>
         <div class="det-pane" id="det-pane"></div>
       </div>

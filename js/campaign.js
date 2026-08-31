@@ -351,6 +351,24 @@ async function advanceGate(id){
   const dc=devCost(cost);
   const pct=gatePct(p);
 
+  const isPhase3 = p.stage === 3;
+  const actions = [];
+  if (isPhase3) {
+    actions.push({
+      label: `⚔️ Head-to-Head Pivotal Trial Duel (Battle for Approval)`,
+      val: "duel",
+      primary: true,
+      icon: "i-zap"
+    });
+  }
+  actions.push({
+    label: `Standard Clinical Trial (${fmtM(dc)} + ${data} data)`,
+    val: "go",
+    primary: !isPhase3,
+    icon: "i-dice"
+  });
+  actions.push({ label: "Not yet", val: null });
+
   const back=Modal.open({
     kicker:`DEVELOPMENT GATE · ${STAGES[p.stage].toUpperCase()} → ${STAGES[p.stage+1].toUpperCase()}`,
     title:`Advance ${esc(d.n)}?`,
@@ -361,15 +379,21 @@ async function advanceGate(id){
         <div class="small mut">Success probability derived from the molecule's real profile —
         ${g.stat==="blend"?"efficacy + safety":g.stat==="eff"?"efficacy dominates":"safety dominates"}.</div>
         <div class="roll-real">${icon("i-info")} ${g.real}</div>
+        ${isPhase3 ? `<div class="pivotal-duel-note panel" style="margin-top:14px;padding:10px;text-align:left;font-size:12px;background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.3)">
+          <b style="color:var(--gold)">${icon("i-trophy")} Phase III Pivotal Trial Duel Available:</b>
+          Enter an interactive clinical duel prescribing <b>${esc(d.n)}</b> against a rival pharma. Winning guarantees FDA approval and a +$35M milestone reward!
+        </div>` : ""}
       </div>`,
-    actions:[
-      {label:`Advance (${fmtM(dc)} + ${data} data)`,val:"go",primary:true,icon:"i-dice"},
-      {label:"Not yet",val:null},
-    ],
+    actions,
   });
   const r=await new Promise(res=>{back._resolveFn=res;});
-  if(r!=="go")return;
+  if(!r)return;
   Modal.close(back);
+
+  if (r === "duel") {
+    launchPivotalDuel(p, d, dc, data);
+    return;
+  }
 
   C.ap--;C.cash-=dc;C.data-=data;
   refreshHUD();
@@ -423,6 +447,59 @@ async function advanceGate(id){
       saveC();renderPipe();renderActions();renderFeed();
     },1500);
   },1700);
+}
+
+/* ---------------- pivotal trial head-to-head duel ---------------- */
+function launchPivotalDuel(p, d, dc, data) {
+  C.ap--;
+  C.cash -= dc;
+  C.data -= data;
+  saveC();
+  refreshHUD();
+
+  // Find a clinical case matching this molecule
+  let cs = CASES.find(c => c.area === d.a || (c.key && d.inds.join(" ").toLowerCase().includes(c.key)));
+  if (!cs) cs = pick(CASES);
+
+  // Custom 10-card deck: player's lead molecule + baseline emergency staples
+  const STAPLES = ["asp", "epi", "salbu", "amox", "furos", "lisin", "acetam", "diph", "atorv", "omep"];
+  const userCards = [d.id, ...STAPLES.filter(s => s !== d.id)].slice(0, 10);
+
+  // AI rival deck
+  const rivalName = pick(RIVALS);
+  const aiCards = shuffle(ARCHETYPES.find(a => a.id === "code_blue")?.cards || STAPLES).slice(0, 10);
+
+  // Navigate to arena view
+  location.hash = "#/arena";
+  enterDuel();
+
+  // Configure M match state for Pivotal Trial
+  M = {
+    deckId: "pivotal_trial",
+    diff: "resident",
+    decks: [shuffle(userCards), shuffle(aiCards)],
+    deckPos: [0, 0],
+    hands: [[], []],
+    chart: [],
+    caseNo: 1,
+    score: [0, 0],
+    insights: new Set(),
+    archNames: [`${d.n} (Pivotal Phase III Lead)`, `${rivalName} Portfolio`],
+    rival: rivalName,
+    busy: false,
+    consultUsed: false,
+    isPivotalTrial: true,
+    pivotalDrugId: d.id,
+    pivotalPipeItem: p,
+    cs: cs,
+    mods: [pick(MODS)]
+  };
+
+  renderArenaShell();
+  renderCase();
+  dealHands();
+  
+  toast(`Pivotal Trial Duel: Administer ${d.n} and outscore ${rivalName}!`, "gold", "i-zap");
 }
 
 /* ---------------- launch & pricing ---------------- */

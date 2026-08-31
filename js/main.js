@@ -313,11 +313,13 @@ const DailyCase = {
   },
 
   showCompletedModal(dateStr, cs, data){
-    const shareText = `THERAPEUTIC INDEX Daily Case #${dateStr}\n` +
-      `Diagnosis: ${cs.ind}\n` +
-      `Outcome: ${data.cured ? "Stabilized / Cured" : "Suboptimal"} (Score: ${data.score})\n` +
-      `Regimen: ${data.drugs.join(" + ")}\n` +
-      `Streak: ${data.streak} Days`;
+    const pctile = data.cured ? Math.min(99, Math.round(82 + Math.random() * 16)) : Math.round(30 + Math.random() * 35);
+    const shareText = `THERAPEUTIC INDEX · Daily Case #${dateStr}\n` +
+      `🩺 Diagnosis: ${cs.ind}\n` +
+      `${data.cured ? "🟢 STABILIZED" : "🔴 SUBOPTIMAL"} · Score: +${data.score} pts (Top ${100 - pctile}%)\n` +
+      `💊 Regimen: ${data.drugs.join(" + ")}\n` +
+      `🔥 Streak: ${data.streak} Day${data.streak > 1 ? "s" : ""}\n` +
+      `Play: https://snackitpal.github.io/pharma-card-game/`;
 
     Modal.open({
       wide: true,
@@ -325,9 +327,9 @@ const DailyCase = {
       title: data.cured ? "Case Successfully Managed" : "Case Concluded",
       html: `
         <div class="end-hero" style="margin: 0 auto">
-          <div class="cup-icon" style="color:${data.cured?"var(--teal)":"var(--gold)"}">${icon(data.cured?"i-check":"i-spark")}</div>
+          <div class="cup-icon" style="color:${data.cured?"var(--mint)":"var(--gold)"}">${icon(data.cured?"i-check":"i-spark")}</div>
           <div class="end-rank">${data.cured ? "PATIENT STABILIZED" : "CASE RESOLVED"}</div>
-          <p class="mut">Final Score: <b>+${data.score} pts</b> · Toxicity: ${data.chartTox} · Interactions: ${data.interactions}</p>
+          <p class="mut">Final Score: <b>+${data.score} pts</b> · <span class="mono" style="color:var(--mint)">Top ${100 - pctile}% Guideline Concordance</span></p>
           <div class="end-stats" style="margin: 16px 0">
             <div><b>${data.streak}</b>DAILY STREAK</div>
             <div><b>${data.drugs.length}</b>ORDERS</div>

@@ -18,9 +18,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;800&family=Lora:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/base.css?v=7">
-<link rel="stylesheet" href="css/card.css?v=7">
-<link rel="stylesheet" href="css/modes.css?v=7">
+<link rel="stylesheet" href="css/base.css?v=8">
+<link rel="stylesheet" href="css/card.css?v=8">
+<link rel="stylesheet" href="css/modes.css?v=8">
 </head>
 <body>
 
@@ -111,50 +111,95 @@
     <div class="hero">
       <div id="hero-cards" aria-hidden="true"></div>
       <div class="hero-inner">
-        <div class="hero-kicker mono">132 REAL MEDICINES · REAL PHARMACOLOGY · NO PAYWALL</div>
-        <h1 class="hero-title">PLAY GOD WITH<br>132 REAL MEDICINES.<br><span class="grad">EVERY STAT IS GROUNDED IN SCIENCE.</span></h1>
-        <p class="hero-sub">Screen lead molecules, push candidate drugs through brutal clinical trials that can fail, ride patent cliffs, and duel AI rivals across real patient charts. Synergies reward genius polypharmacy; toxic drug interactions punish careless prescribing.</p>
+        <div class="hero-kicker mono">132 REAL MOLECULES · CLINICAL PHARMACOLOGY · STRATEGY SIMULATION</div>
+        <h1 class="hero-title">MASTER CLINICAL PHARMACOLOGY<br>THROUGH STRATEGY.<br><span class="grad">REAL MOLECULES. REAL DECISIONS.</span></h1>
+        <p class="hero-sub">Learn drugs by using them. Prescribe targeted regimens across real patient charts, navigate synergistic polypharmacy & toxic drug interaction traps, push molecules through clinical trials, and duel AI rivals.</p>
         <div class="hero-ctas">
-          <button class="btn btn-mint btn-lg" data-route="tutorial"><svg><use href="#i-check"/></svg>Case Zero Tutorial</button>
-          <button class="btn btn-primary btn-lg" data-route="campaign"><svg><use href="#i-flask"/></svg>Found your pharma</button>
+          <button class="btn btn-mint btn-lg hero-main-cta" data-route="tutorial"><svg><use href="#i-check"/></svg>Start with Case Zero (3 Mins)</button>
           <button class="btn btn-gold btn-lg" data-route="daily"><svg><use href="#i-spark"/></svg>Play Daily Case</button>
-          <button class="btn btn-lg" data-route="casemaker"><svg><use href="#i-atom"/></svg>Case Maker</button>
-          <button class="btn btn-lg" data-route="library"><svg><use href="#i-stack"/></svg>Browse Compendium</button>
+          <button class="btn btn-primary btn-lg" data-route="campaign"><svg><use href="#i-flask"/></svg>Found Pharma Company</button>
           <button class="btn btn-lg" data-route="arena"><svg><use href="#i-trophy"/></svg>The Formulary Cup</button>
+          <button class="btn btn-lg" data-route="library"><svg><use href="#i-stack"/></svg>Drug Compendium</button>
         </div>
         <div class="hero-stats mono" id="hero-stats"></div>
       </div>
     </div>
+
+    <!-- 30-Second Turn Hook -->
+    <div class="how-it-works-panel panel">
+      <div class="how-head">
+        <span class="mono kicker-sm">HOW A CLINICAL TURN WORKS</span>
+        <h3>From Presentation to Patient Discharge in 30 Seconds</h3>
+      </div>
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="step-num mono">01</div>
+          <div class="step-icon" style="--sc:var(--sky)"><svg><use href="#i-heart"/></svg></div>
+          <div class="step-txt">
+            <b>1. Clinical Presentation</b>
+            <p>Patient presents with acute diagnosis & modifiers (e.g. <i>NSTEMI + CKD</i>).</p>
+          </div>
+        </div>
+        <div class="step-arrow"><svg><use href="#i-ar"/></svg></div>
+        <div class="step-step how-step">
+          <div class="step-num mono">02</div>
+          <div class="step-icon" style="--sc:var(--mint)"><svg><use href="#i-pill"/></svg></div>
+          <div class="step-txt">
+            <b>2. Prescribe Regimen</b>
+            <p>Select molecules matching mechanisms and organ clearance pathways.</p>
+          </div>
+        </div>
+        <div class="step-arrow"><svg><use href="#i-ar"/></svg></div>
+        <div class="step-step how-step">
+          <div class="step-num mono">03</div>
+          <div class="step-icon" style="--sc:var(--gold)"><svg><use href="#i-zap"/></svg></div>
+          <div class="step-txt">
+            <b>3. Synergies & DDI Traps</b>
+            <p>Guideline combos grant bonus pts; toxic pairs spike patient instability.</p>
+          </div>
+        </div>
+        <div class="step-arrow"><svg><use href="#i-ar"/></svg></div>
+        <div class="step-step how-step">
+          <div class="step-num mono">04</div>
+          <div class="step-icon" style="--sc:var(--rose)"><svg><use href="#i-chart"/></svg></div>
+          <div class="step-txt">
+            <b>4. Vitals & Discharge</b>
+            <p>Watch ECG telemetry react and receive a full Morbidity & Discharge Debrief.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="home-modes">
-      <button class="mode-card" data-route="campaign">
-        <div class="mode-ico" style="--c:#ffd166"><svg><use href="#i-flask"/></svg></div>
-        <h3>Campaign <span class="mono tag-mini">FIRST IN HUMAN</span></h3>
-        <p>Draft 1 of 3 starter leads with $60M cash and 4 AP/yr. Screen molecules, push trials (failed trials teach +8 Data), hire a CSO, navigate patent cliffs, and reach a $2.5B+ valuation.</p>
-        <span class="mode-go mono">FOUND COMPANY →</span>
-      </button>
       <button class="mode-card" data-route="daily">
         <div class="mode-ico" style="--c:#2fd6a5"><svg><use href="#i-spark"/></svg></div>
-        <h3>Daily Clinical Case <span class="mono tag-mini">DAILY CHALLENGE</span></h3>
-        <p>One patient, one clinical diagnosis, one attempt per day. Prescribe a 3-drug regimen against unique patient modifiers, build daily streaks, and share your score.</p>
-        <span class="mode-go mono">START DAILY CASE →</span>
+        <h3>TREAT <span class="mono tag-mini">DAILY CLINICAL CASE</span></h3>
+        <p>One patient, one diagnosis, one daily attempt. Prescribe a 3-drug regimen against unique patient modifiers, build daily streaks, and compare your score percentile.</p>
+        <span class="mode-go mono">START TODAY'S CASE →</span>
       </button>
       <button class="mode-card" data-route="arena">
         <div class="mode-ico" style="--c:#ff5470"><svg><use href="#i-trophy"/></svg></div>
-        <h3>Arena <span class="mono tag-mini">THE FORMULARY CUP</span></h3>
-        <p>Climb the difficulty ladder from Intern to Attending. Consult seniors for mulligans, exploit guideline synergies, and unlock Holo Foil card masteries.</p>
-        <span class="mode-go mono">TAKE THE CUP →</span>
+        <h3>DUEL <span class="mono tag-mini">THE FORMULARY CUP</span></h3>
+        <p>The competitive training gym. Climb from Intern to Attending across best-of-3 cases on a shared patient chart using balanced archetype decks or your custom pharma franchise.</p>
+        <span class="mode-go mono">ENTER THE CUP →</span>
+      </button>
+      <button class="mode-card" data-route="campaign">
+        <div class="mode-ico" style="--c:#ffd166"><svg><use href="#i-flask"/></svg></div>
+        <h3>DEVELOP <span class="mono tag-mini">PHARMA EMPIRE</span></h3>
+        <p>Build a 20-year biotech powerhouse. Screen candidate leads, fund clinical trials, duel rivals in Head-to-Head Pivotal Trials for FDA approval, and navigate patent cliffs.</p>
+        <span class="mode-go mono">FOUND PHARMA COMPANY →</span>
       </button>
       <button class="mode-card" data-route="library">
         <div class="mode-ico" style="--c:#4cc9f0"><svg><use href="#i-stack"/></svg></div>
-        <h3>The Compendium <span class="mono tag-mini">132 REAL DRUGS</span></h3>
-        <p>A holographic library of 132 real medicines — from digoxin to CAR-T. Track collection progress, view pharmacology dossiers, and inspect foil masteries.</p>
-        <span class="mode-go mono">OPEN VAULT →</span>
+        <h3>LEARN <span class="mono tag-mini">132 MOLECULE VAULT</span></h3>
+        <p>Interactive monograph dossiers for 132 real compounds. Inspect factual PK, bioavailability, half-lives, CYP450 metabolism, interaction codex, and foil masteries.</p>
+        <span class="mode-go mono">OPEN COMPENDIUM →</span>
       </button>
     </div>
     <div class="ticker-wrap"><div class="ticker" id="home-ticker"></div></div>
     <footer class="site-foot">
-      <span>Educational entertainment. Sales figures & pharmacology are approximations — not medical advice.</span>
-      <span class="mono">THERAPEUTIC INDEX · built for molecule nerds</span>
+      <span>Interactive simulation for medical & pharmacy education. Dosages and parameters are mathematical game abstractions — not medical advice.</span>
+      <span class="mono">THERAPEUTIC INDEX · clinical pharmacology platform</span>
     </footer>
   </section>
 
@@ -190,17 +235,17 @@
 <div id="modal-root"></div>
 <div id="toast-root" aria-live="polite"></div>
 
-<script src="js/utils.js?v=7"></script>
-<script src="js/data.js?v=7"></script>
-<script src="js/audio.js?v=7"></script>
-<script src="js/ecg.js?v=7"></script>
-<script src="js/bg.js?v=7"></script>
-<script src="js/card.js?v=7"></script>
-<script src="js/library.js?v=7"></script>
-<script src="js/campaign.js?v=7"></script>
-<script src="js/duel.js?v=7"></script>
-<script src="js/tutorial.js?v=7"></script>
-<script src="js/casemaker.js?v=7"></script>
-<script src="js/main.js?v=7"></script>
+<script src="js/utils.js?v=8"></script>
+<script src="js/data.js?v=8"></script>
+<script src="js/audio.js?v=8"></script>
+<script src="js/ecg.js?v=8"></script>
+<script src="js/bg.js?v=8"></script>
+<script src="js/card.js?v=8"></script>
+<script src="js/library.js?v=8"></script>
+<script src="js/campaign.js?v=8"></script>
+<script src="js/duel.js?v=8"></script>
+<script src="js/tutorial.js?v=8"></script>
+<script src="js/casemaker.js?v=8"></script>
+<script src="js/main.js?v=8"></script>
 </body>
 </html>
