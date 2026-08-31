@@ -87,7 +87,7 @@ function renderLibTools(){
     const btn=e.target.closest(".lib-qf-chip");
     if(!btn) return;
     Lib.quickTag = btn.dataset.qf;
-    $$(".lib-qf-chip", "#lib-qf").forEach(b=>b.classList.toggle("on", b===btn));
+    $$(".lib-qf-chip", $("#lib-qf")).forEach(b=>b.classList.toggle("on", b===btn));
     if(Lib.mode==="codex"){
       Lib.mode="grid";
       $("#lib-vgrid")?.classList.add("on");

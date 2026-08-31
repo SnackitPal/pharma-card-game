@@ -6,8 +6,11 @@
 
 "use strict";
 
-const $  = (s,r=document)=>r.querySelector(s);
-const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const $  = (s,r=document)=>(typeof r==="string"?document.querySelector(r):r)?.querySelector(s);
+const $$ = (s,r=document)=>{
+  const root = typeof r==="string"?document.querySelector(r):r;
+  return root ? [...root.querySelectorAll(s)] : [];
+};
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function esc(s){
@@ -366,6 +369,9 @@ function showClinicalDebriefModal({
     ? "Guideline-directed medical therapy successfully balanced target organ perfusion while mitigating off-target receptor toxicity."
     : "Review metabolic clearance (CYP450 / renal) and synergistic pharmacodynamics when prescribing multiple active agents.");
 
+  const numScore = typeof score === "number" ? score : (parseFloat(score) || 0);
+  const numRival = rivalScore != null ? (typeof rivalScore === "number" ? rivalScore : (parseFloat(rivalScore) || 0)) : null;
+
   const back = Modal.open({
     wide: true,
     kicker: "CLINICAL AUDIT · MORBIDITY & DISCHARGE REPORT",
@@ -375,8 +381,8 @@ function showClinicalDebriefModal({
         <div class="deb-top-card panel">
           <div class="deb-meta-row">
             <div><small class="mono dim">DIAGNOSIS</small><div class="deb-meta-val">${esc(diagnosis)}</div></div>
-            <div><small class="mono dim">CLINICAL AUDIT SCORE</small><div class="deb-meta-val" style="color:${isWon?"var(--mint)":"var(--rose)"}">${score>=0?"+":""}${score.toFixed(1)} PTS</div></div>
-            ${rivalScore!=null?`<div><small class="mono dim">RIVAL (${esc(rivalName||"RIVAL")})</small><div class="deb-meta-val">${rivalScore.toFixed(1)} PTS</div></div>`:""}
+            <div><small class="mono dim">CLINICAL AUDIT SCORE</small><div class="deb-meta-val" style="color:${isWon?"var(--mint)":"var(--rose)"}">${numScore>=0?"+":""}${numScore.toFixed(1)} PTS</div></div>
+            ${numRival!=null?`<div><small class="mono dim">RIVAL (${esc(rivalName||"RIVAL")})</small><div class="deb-meta-val">${numRival.toFixed(1)} PTS</div></div>`:""}
           </div>
           <div class="deb-status-row">${statusBadge}</div>
         </div>
