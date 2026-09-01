@@ -45,6 +45,11 @@
 
   function loop(){
     if(!visible||REDUCED)return;
+    // When a modal is open, pause canvas drawing to prevent GPU buffer collisions on mobile
+    if(typeof Modal !== "undefined" && Modal.stack && Modal.stack.length > 0){
+      setTimeout(() => requestAnimationFrame(loop), 250);
+      return;
+    }
     frame++;
     g.clearRect(0,0,W,H);
 
